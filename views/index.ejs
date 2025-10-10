@@ -1,0 +1,16 @@
+
+<main>
+    <h2>Archive</h2>
+    
+    <% if (notes && notes.length > 0) { %>
+        <ul>
+            <% notes.forEach(note => { %>
+                <li>
+                    <a href="/note/<%= note.slug %>"><%= note.title %></a>
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>No notes found.</p>
+    <% } %>
+</main>

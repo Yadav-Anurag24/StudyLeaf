@@ -1,0 +1,82 @@
+/* Basic Body & Typography Styles */
+.container {
+    font-family: Georgia, serif; /* A clean, classic font for readability */
+    line-height: 1.7;
+    max-width: 700px; /* Limits the width for better reading on wide screens */
+    margin: 0 auto; /* Centers the content block */
+    padding: 2rem;
+    background-color: #fafafa; /* A soft, off-white background */
+    color: #222; /* A dark, but not pure black, text color */
+}
+
+body {
+    background-color: #fafafa;
+    color: #222;
+    margin: 0;
+}
+
+/* Header Styles */
+header {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+}
+
+header h1 {
+    font-size: 2rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Link Styles */
+a {
+    color: #0044cc;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Main Content Styles */
+main h2 {
+    font-weight: 500;
+}
+
+/* Note List Styles */
+main ul {
+    list-style: none;
+    padding: 0;
+}
+
+main li {
+    margin-bottom: 0.5rem;
+}
+
+/* Site Header / Nav Styles */
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: #222;
+}
+
+.site-header nav a {
+    margin-left: 1rem;
+}
+
+/* Style for the new site description */
+.site-description {
+    font-size: 0.9rem; /* Make it slightly smaller */
+    color: #555;      /* Use a softer, gray color for the text */
+    margin: 0;         /* Remove the default top/bottom margin from the paragraph */
+}
