@@ -1,23 +1,46 @@
-/* Basic Body & Typography Styles */
-.container {
-    font-family: Georgia, serif; /* A clean, classic font for readability */
-    line-height: 1.7;
-    max-width: 700px; /* Limits the width for better reading on wide screens */
-    margin: 0 auto; /* Centers the content block */
-    padding: 2rem;
-    background-color: #fafafa; /* A soft, off-white background */
-    color: #222; /* A dark, but not pure black, text color */
+/* 1. DEFINE COLOR VARIABLES */
+:root {
+    --background-color: #fafafa;
+    --text-color: #222;
+    --link-color: #0044cc;
+    --border-color: #ddd;
+    --header-text-color: #222;
+    --description-color: #555;
+    --code-bg-color: #eee;
+    --brand-color: #4CAF50; /* A nice, leafy green */
+    --brand-color-hover: #45a049; /* A slightly darker green for hover */
 }
 
+[data-theme='dark'] {
+    --background-color: #1a1a1a;
+    --text-color: #ddd;
+    --link-color: #8ab4f8;
+    --border-color: #444;
+    --header-text-color: #eee;
+    --description-color: #aaa;
+    --code-bg-color: #2d2d2d;
+    --brand-color: #4CAF50;
+    --brand-color-hover: #5cb85c; /* A slightly lighter green for hover on dark backgrounds */
+}
+
+
+/* 2. APPLY VARIABLES TO GENERAL STYLES */
 body {
-    background-color: #fafafa;
-    color: #222;
+    background-color: var(--background-color);
+    color: var(--text-color);
     margin: 0;
 }
 
-/* Header Styles */
+.container {
+    font-family: Georgia, serif;
+    line-height: 1.7;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
 header {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 2rem;
     padding-bottom: 1rem;
 }
@@ -28,9 +51,8 @@ header h1 {
     margin: 0;
 }
 
-/* Link Styles */
 a {
-    color: #0044cc;
+    color: var(--link-color);
     text-decoration: none;
 }
 
@@ -38,12 +60,10 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Main Content Styles */
 main h2 {
     font-weight: 500;
 }
 
-/* Note List Styles */
 main ul {
     list-style: none;
     padding: 0;
@@ -53,12 +73,13 @@ main li {
     margin-bottom: 0.5rem;
 }
 
-/* Site Header / Nav Styles */
+
+/* 3. APPLY VARIABLES TO SITE HEADER & NAV */
 .site-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 1rem;
     margin-bottom: 2rem;
 }
@@ -67,16 +88,100 @@ main li {
     font-size: 1.5rem;
     font-weight: bold;
     text-decoration: none;
-    color: #222;
+    color: var(--brand-color); /* Use the new brand color */
+    transition: color 0.3s ease; /* Add a smooth transition for the hover effect */
+}
+
+.site-title:hover {
+    color: var(--brand-color-hover); /* Use the hover color */
+}
+
+.site-description {
+    font-size: 0.9rem;
+    color: var(--description-color);
+    margin: 0;
 }
 
 .site-header nav a {
     margin-left: 1rem;
 }
 
-/* Style for the new site description */
-.site-description {
-    font-size: 0.9rem; /* Make it slightly smaller */
-    color: #555;      /* Use a softer, gray color for the text */
-    margin: 0;         /* Remove the default top/bottom margin from the paragraph */
+
+/* 4. APPLY VARIABLES TO NOTE CONTENT & CODE BLOCKS */
+.note-content code {
+    background-color: var(--code-bg-color);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: monospace;
 }
+
+.note-content pre {
+    background-color: var(--code-bg-color);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+
+/* 5. STYLES FOR THE THEME TOGGLE */
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0 0 0 1rem;
+}
+
+/* Responsive and styled images */
+.note-content img {
+    max-width: 100%; /* Ensures the image is never wider than its container */
+    height: auto;    /* Maintains the aspect ratio */
+    border-radius: 8px; /* Adds nice, soft corners */
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Scroll-to-top Button Styles */
+#scrollTopBtn {
+    display: none; /* Hidden by default */
+    position: fixed; /* Keep it in place while scrolling */
+    bottom: 20px;
+    right: 30px;
+    z-index: 99; /* Make sure it's on top of other content */
+    border: 1px solid var(--border-color);
+    outline: none;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 18px;
+    transition: opacity 0.3s;
+}
+
+#scrollTopBtn:hover {
+    opacity: 0.7;
+}
+
+
+
+/* Styles for the summary box (tl;dr) */
+.summary-box {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    padding-left: 1.5rem;
+    border-left: 3px solid var(--border-color);
+    font-style: italic;
+    color: var(--description-color); /* Use a softer color for the summary text */
+}
+
+.summary-box p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.summary-box strong {
+    font-style: normal; /* Make the 'tl;dr:' label not italic */
+    color: var(--text-color); /* Make the label the standard text color */
+}
+

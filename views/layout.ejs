@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     
     <title>StudyLeaf - <%= title %></title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+    
 </head>
 <body>
     <div class="container">
@@ -19,6 +24,7 @@
     <nav>
         <a href="/">Home</a>
         <a href="/about">About</a>
+        <button id="theme-toggle" class="theme-toggle">🌙</button>
     </nav>
 </header>
 
@@ -28,5 +34,10 @@
 
      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
+
+    <!-- Toggle-mode  -->
+    <script src="/scripts/main.js"></script>
+
+    <button id="scrollTopBtn" title="Go to top">⬆️</button>
 </body>
 </html>
