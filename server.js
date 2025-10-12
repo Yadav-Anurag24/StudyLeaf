@@ -4,10 +4,10 @@ const express = require('express');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
-const FileStore = require('session-file-store')(session);
 const { marked } = require('marked');
 const mongoose = require('mongoose');
 const Note = require('./models/Note');
+const MongoStore = require('connect-mongo');
 
 // 2. Constants & Middleware Setup
 const app = express();
@@ -39,11 +39,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // THIS MUST COME AFTER THE CONFIGS ABOVE AND BEFORE YOUR ROUTES
 app.use(session({
-    store: new FileStore(),
-    secret: process.env.SESSION_SECRET, // Use the environment variable
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 }
+    store: MongoStore.create({
+        mongoUrl: process.env.DATABASE_URL, // Use the same database connection string
+        collectionName: 'sessions' // Name of the collection to store sessions
+    }),
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+    }
 }));
 
 // 4. Define Routes
