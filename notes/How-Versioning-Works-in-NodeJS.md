@@ -1,3 +1,7 @@
+---
+date: 2025-10-11
+---
+
 ## 1️⃣ Suppose we have Node version: `4.18.2`
 
 In this version, there are **three parts**, following the **Semantic Versioning (SemVer)** standard:

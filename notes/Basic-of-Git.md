@@ -1,3 +1,7 @@
+---
+date: 2025-10-10
+---
+
 *How to push your project to Github?*
 
 #. First create a Repo of your project on Github.

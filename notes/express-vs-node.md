@@ -1,3 +1,7 @@
+---
+date: 2025-10-08
+---
+
 ## This is My First Note
 
 This is a paragraph to test things out. I can use **bold text** or *italic text*.
