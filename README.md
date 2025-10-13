@@ -1,81 +1,92 @@
-# 📖 StudyLeaf
+# 📖 StudyLeaf - A Minimalist Note-Taking CMS
 
-> A minimalist, Markdown-based personal learning journal built with Node.js and Express.
+A full-stack, database-driven personal learning journal built with Node.js, Express, and MongoDB. This application allows for creating, editing, and managing notes through a clean, content-focused interface with secure admin controls.
 
-![StudyLeaf Screenshot](https://i.imgur.com/WpP8I7H.png)
-
-## About The Project
-
-StudyLeaf is a clean, content-focused web application designed to be a personal knowledge vault. Inspired by the minimalist aesthetic of developers like Mary Rose Cook, this project serves as a digital notebook for documenting course notes, book summaries, and technical learnings.
-
-All notes are written in simple Markdown files, which the application dynamically reads and renders into beautifully styled web pages, making it an ideal tool for developers and lifelong learners alike.
+![StudyLeaf Screenshot](https://i.imgur.com/your-screenshot-url.png)
+_Replace the link above with a URL to a new screenshot of your finished project._
 
 ---
+## ## About The Project
 
-## ✨ Features
+StudyLeaf is a complete Content Management System (CMS) designed to be a personal knowledge vault. Inspired by the minimalist aesthetic of developers like Mary Rose Cook, this project moved beyond a simple file-based blog to become a robust, database-driven web application.
 
-* **Dynamic Content:** Automatically reads and lists all notes from a local `/notes` directory.
-* **Markdown-to-HTML:** Parses Markdown files, including fenced code blocks, into clean HTML on the fly.
-* **Syntax Highlighting:** Provides beautiful, theme-based syntax highlighting for code snippets using `highlight.js`.
-* **Minimalist UI:** A clean, single-column, responsive layout focused entirely on readability.
-* **Efficient Templating:** Uses EJS and a master layout file to keep the codebase DRY (Don't Repeat Yourself).
+Notes are written in Markdown and managed through a secure, password-protected interface. The application is built from the ground up, featuring a full suite of CRUD (Create, Read, Update, Delete) operations, user authentication, and a polished, responsive UI.
 
 ---
+## ## Core Features ✨
 
-## 🛠️ Built With
+* **Full CRUD Functionality:** Create, read, update, and delete notes directly from the web interface.
+* **Database Integration:** All notes and user sessions are stored persistently in a **MongoDB Atlas** cloud database.
+* **Secure Authentication:** Admin routes for creating, editing, and deleting notes are protected by a password-based session authentication system.
+* **Dynamic Content Rendering:** Notes are written in Markdown and parsed into clean HTML on the server-side using `marked`.
+* **Note Sorting & Metadata:** Notes are automatically sorted by date, with metadata managed in the database.
+* **Live Search:** Instantly find notes by keyword with a search function that queries the database title and content fields.
+* **Polished UI/UX:**
+    * Clean, minimalist, and responsive design.
+    * **Light/Dark Mode** toggle that respects the user's OS preference and saves their choice.
+    * Beautiful syntax highlighting for code blocks via `highlight.js`.
+    * Convenient "Scroll to Top" and floating action buttons.
 
-This project was built using the following technologies:
+---
+## ## Tech Stack 🛠️
 
 * **Backend:** Node.js, Express.js
+* **Database:** MongoDB with Mongoose
 * **Frontend:** EJS (Embedded JavaScript Templates), HTML5, CSS3
 * **Key NPM Packages:**
-    * `express-ejs-layouts`
-    * `marked`
-    * `nodemon`
-    * `highlight.js` (client-side)
+    * `mongoose` for database modeling.
+    * `express-session` & `connect-mongo` for persistent, database-backed sessions.
+    * `dotenv` for secure management of environment variables.
+    * `marked` for Markdown parsing.
+    * `nodemon` for development.
 
 ---
+## ## Getting Started
 
-## 🚀 Getting Started
-
-To get a local copy up and running, follow these simple steps.
+To get a local copy up and running, follow these steps.
 
 ### Prerequisites
 
-Ensure that Node.js and npm are installed on your machine.
+Make sure you have Node.js and npm installed.
 * npm
     ```sh
     npm install npm@latest -g
     ```
 
-### Installation
+### Installation & Setup
 
-1.  Clone the repository:
+1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/Yadav-Anurag24/StudyLeaf.git
+    git clone [https://github.com/your-username/StudyLeaf.git](https://github.com/your-username/StudyLeaf.git)
     ```
-2.  Navigate into the project directory:
+2.  **Navigate into the project directory:**
     ```sh
     cd StudyLeaf
     ```
-3.  Install NPM packages:
+3.  **Install NPM packages:**
     ```sh
     npm install
     ```
-4.  Run the server in development mode:
+4.  **Set up your environment variables:**
+    * Create a file named `.env` in the root of the project.
+    * Add the following variables, replacing the values with your own:
+        ```env
+        # MongoDB Connection String from Atlas
+        DATABASE_URL=mongodb+srv://...
+
+        # Your secret admin password
+        ADMIN_PASSWORD=your_secret_password
+
+        # A long, random string for session security
+        SESSION_SECRET=your_long_random_session_secret
+        ```
+5.  **Run the server:**
     ```sh
     npm run dev
     ```
-5.  Open your browser and visit `http://localhost:3000`.
+6.  Open your browser and visit `http://localhost:3000`.
 
 ---
+## ## Deployment
 
-## Usage
-
-To add a new note, simply create a new `.md` file in the `/notes` directory. Use hyphens for spaces in the filename (e.g., `my-new-note.md`). The application will automatically detect it and add it to the homepage archive.
-
----
-
-## Acknowledgements
-
-* Inspiration for the UI/UX came from [Mary Rose Cook's blog](https://maryrosecook.com/blog/).
+This application is deployed on **Vercel** and configured with the necessary environment variables for production use. The session store is configured with `connect-mongo`, making it compatible with Vercel's ephemeral file system.
