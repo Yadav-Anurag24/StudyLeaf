@@ -26,3 +26,29 @@
         <button type="submit" class="delete-btn">Delete Note</button>
     </form>
 </main>
+
+<script>
+    const deleteForm = document.querySelector('.delete-form');
+
+    deleteForm.addEventListener('submit', function(event) {
+        // 1. Immediately prevent the form from submitting
+        event.preventDefault();
+
+        // 2. Show the stylish SweetAlert2 modal
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This action cannot be undone!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d9534f', // The red color of your delete button
+            cancelButtonColor: '#555',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            // 3. If the user clicks "Yes, delete it!"...
+            if (result.isConfirmed) {
+                // ...then submit the form programmatically.
+                deleteForm.submit();
+            }
+        });
+    });
+</script>
