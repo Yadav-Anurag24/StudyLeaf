@@ -1,17 +1,47 @@
-<header>
-    <h1>Create a New Note</h1>
-</header>
+<form action="/note/new" method="POST" class="notepad-form">
+    <input 
+        type="text" 
+        id="title" 
+        name="title" 
+        class="notepad-title"
+        placeholder="Note Title..." 
+        required
+    >
 
-<main>
-    <form action="/note/new" method="POST" class="note-form">
-        <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" required>
-        </div>
-        <div class="form-group">
-            <label for="content">Content (Markdown supported)</label>
-            <textarea id="content" name="content" rows="15" required></textarea>
-        </div>
+    <textarea 
+        id="content" 
+        name="content" 
+        class="notepad-content"
+    ></textarea>
+    
+    <div class="editor-actions">
         <button type="submit" class="submit-btn">Save Note</button>
-    </form>
-</main>
+    </div>
+</form>
+
+<script>
+    const mde = new EasyMDE({
+        element: document.getElementById('content'),
+        spellChecker: false,
+        status: false,
+        // Add our custom button to the toolbar
+        toolbar: [
+            "bold", "italic", "strikethrough", "|", 
+            "heading-1", "heading-2", "heading-3", "|", 
+            "quote", "unordered-list", "ordered-list", "|", 
+            "link", "image", "|", 
+            {
+                name: "highlight",
+                action: function(editor) {
+                    const cm = editor.codemirror;
+                    const selection = cm.getSelection();
+                    cm.replaceSelection(`<mark>${selection}</mark>`);
+                },
+                className: "fa fa-paint-brush", // Font Awesome icon
+                title: "Highlight Text",
+            },
+            "|",
+            "preview", "side-by-side", "fullscreen"
+        ]
+    });
+</script>

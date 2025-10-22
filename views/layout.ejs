@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" href="/styles/main.css">
@@ -12,36 +13,34 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+
+
     
 </head>
 <body>
-    
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <div class="container">
         <header class="site-header">
             <div class="site-branding">
-               <a href="/" class="site-title">StudyLeaf</a>
-               <p class="site-description">My personal learning journal.</p>
+                <a href="/" class="site-title">StudyLeaf</a>
+                <p class="site-description">My personal learning journal.</p>
             </div>
-    <nav>
-        <a href="/">Home</a>
-        <a href="/about">About</a>
-        <button id="theme-toggle" class="theme-toggle">🌙</button>
-    </nav>
-</header>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/about">About</a>
+                <button id="theme-toggle" class="theme-toggle">🌙</button>
+            </nav>
+        </header>
 
         <%- body %>
 
     </div>
 
-    <!-- Handles Stylish alert window -->
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
-
-    <!-- Toggle-mode  -->
     <script src="/scripts/main.js"></script>
-
     <button id="scrollTopBtn" title="Go to top">⬆️</button>
 </body>
 </html>

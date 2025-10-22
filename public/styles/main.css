@@ -219,12 +219,12 @@ main li {
 .fab {
     position: fixed;
     bottom: 30px;
-    right: 30px;
+    left: 30px; /* Changed from 'right' to 'left' */
     width: 56px;
     height: 56px;
     background-color: var(--brand-color);
     color: white;
-    border-radius: 50%; /* Makes it a circle */
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -320,3 +320,113 @@ main li {
 .delete-btn:hover {
     background-color: #c9302c; /* A darker red on hover */
 }
+
+/* Notepad Editor Styles */
+.notepad-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.notepad-title, .notepad-content {
+    border: none;
+    background: none;
+    outline: none; /* Removes the focus ring */
+    width: 100%;
+    font-family: inherit; /* Use the same font as the body */
+    color: var(--text-color);
+    padding: 0;
+    resize: none; /* Disable resizing on the textarea */
+}
+
+.notepad-title {
+    font-size: 2.5rem; /* Make it look like an <h1> */
+    font-weight: 500;
+    margin-bottom: 2rem;
+}
+
+.notepad-content {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    flex-grow: 1; /* Allow the textarea to fill available space */
+    min-height: 40vh; /* Give it a good minimum height */
+}
+
+/* Make the title input in the edit form look right */
+.editor-pane input[type="date"] {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Make the textarea fill its parent */
+.notepad-content {
+    height: 100%;
+    min-height: 60vh;
+}
+
+/* Style the preview pane to look like the note page */
+.preview-pane .note-content {
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+/* Editor Actions Bar */
+.editor-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start; /* Aligns items to the left */
+    padding-top: 1.5rem; /* Space above the buttons */
+    padding-bottom: 1rem;
+    border-top: 1px solid var(--border-color); /* A subtle separator */
+    margin-top: 2rem; /* Space between editor and actions */
+}
+
+/* Style for delete button */
+.delete-btn {
+    background-color: #d9534f; /* Red color */
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.delete-btn:hover {
+    background-color: #c9302c; /* Darker red on hover */
+}
+
+/* Keep existing submit button styling or add here */
+.submit-btn {
+    background-color: #5cb85c; /* Green color */
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+    background-color: #4cae4c; /* Darker green on hover */
+}
+
+/* Style for highlighted text */
+mark {
+    background-color: #fafa98; /* A nice, soft yellow */
+    color: #000;
+    padding: 0.1em 0.2em;
+    border-radius: 3px;
+}
+
+[data-theme='dark'] mark {
+    background-color: #fafa98; /* Keep it bright yellow for contrast */
+    color: #000; /* Force dark text for readability */
+}
+

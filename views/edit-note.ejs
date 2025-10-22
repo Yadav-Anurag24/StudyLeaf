@@ -1,53 +1,73 @@
-<header>
-    <h1>Edit Note</h1>
-</header>
+<form method="POST" class="notepad-form">
+    <input 
+        type="text" 
+        id="title" 
+        name="title" 
+        class="notepad-title"
+        value="<%= note.title %>"
+        disabled 
+    >
+    <input type="date" id="date" name="date" value="<%= note.date %>" required
+        style="background-color: var(--background-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem; margin-bottom: 1rem;"
+    >
+    
+    <textarea 
+        id="content" 
+        name="content" 
+        class="notepad-content"
+    ><%= note.content %></textarea>
 
-<main>
-    <form method="POST" class="note-form">
-        <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" value="<%= note.title %>" disabled>
-        </div>
-
-        <div class="form-group">
-            <label for="date">Date</label>
-            <input type="date" id="date" name="date" value="<%= note.date %>" required>
-        </div>
-
-        <div class="form-group">
-            <label for="content">Content (Markdown supported)</label>
-            <textarea id="content" name="content" rows="15" required><%= note.content %></textarea>
-        </div>
-
+    <div class="editor-actions">
         <button type="submit" class="submit-btn">Update Note</button>
-    </form>
+        <button type="button" id="deleteNoteBtn" class="delete-btn">Delete Note</button>
+    </div>
+</form>
 
-    <form method="POST" action="/note/<%= slug %>/delete" class="delete-form">
-        <button type="submit" class="delete-btn">Delete Note</button>
-    </form>
-</main>
+<form id="hiddenDeleteForm" method="POST" action="/note/<%= slug %>/delete" style="display:none;"></form>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    const deleteForm = document.querySelector('.delete-form');
+    // Initialize EasyMDE with the custom button
+    const mde = new EasyMDE({
+        element: document.getElementById('content'),
+        spellChecker: false,
+        status: false,
+        toolbar: [
+            "bold", "italic", "strikethrough", "|", 
+            "heading-1", "heading-2", "heading-3", "|", 
+            "quote", "unordered-list", "ordered-list", "|", 
+            "link", "image", "|", 
+            {
+                name: "highlight",
+                action: function(editor) {
+                    const cm = editor.codemirror;
+                    const selection = cm.getSelection();
+                    cm.replaceSelection(`<mark>${selection}</mark>`);
+                },
+                className: "fa fa-paint-brush",
+                title: "Highlight Text",
+            },
+            "|",
+            "preview", "side-by-side", "fullscreen"
+        ]
+    });
 
-    deleteForm.addEventListener('submit', function(event) {
-        // 1. Immediately prevent the form from submitting
-        event.preventDefault();
+    // Your existing delete confirmation logic (unchanged)
+    const deleteNoteBtn = document.getElementById('deleteNoteBtn');
+    const hiddenDeleteForm = document.getElementById('hiddenDeleteForm');
 
-        // 2. Show the stylish SweetAlert2 modal
+    deleteNoteBtn.addEventListener('click', function(event) {
         Swal.fire({
             title: 'Are you sure?',
             text: "This action cannot be undone!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d9534f', // The red color of your delete button
+            confirmButtonColor: '#d9534f',
             cancelButtonColor: '#555',
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
-            // 3. If the user clicks "Yes, delete it!"...
             if (result.isConfirmed) {
-                // ...then submit the form programmatically.
-                deleteForm.submit();
+                hiddenDeleteForm.submit();
             }
         });
     });

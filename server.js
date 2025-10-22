@@ -138,7 +138,8 @@ app.get('/note/:slug/edit', requireLogin, async (req, res) => {
         res.render('edit-note', {
             title: 'Edit Note',
             note: { title: note.title, content: note.content, date: formattedDate },
-            slug: note.slug
+            slug: note.slug,
+            marked: marked
         });
     } catch (err) {
         res.status(500).send("Server Error");
