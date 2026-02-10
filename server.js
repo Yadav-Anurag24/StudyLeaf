@@ -106,17 +106,46 @@ app.get('/note/new', requireLogin, (req, res) => {
     res.render('new-note', { title: 'New Note' });
 });
 
+// GET Filter notes by tag
+app.get('/tags/:tag', async (req, res) => {
+    const tag = req.params.tag;
+    try {
+        // Find notes where the 'tags' array contains the clicked tag
+        const notes = await Note.find({ tags: tag }).sort({ date: 'desc' });
+        
+        res.render('index', { 
+            notes: notes,
+            title: `Tag: ${tag}` // Changes the browser tab title
+        });
+    } catch (e) {
+        res.status(500).send("Error fetching notes by tag.");
+    }
+});
+
 // POST Create a new note in DB
 app.post('/note/new', requireLogin, async (req, res) => {
-    const { title, content } = req.body;
+    // 1. Get tags from req.body along with title and content
+    const { title, content, tags } = req.body;
+
     if (!title || !content) return res.status(400).send("Title and content are required.");
+
+    // 2. Process the tags string into an array
+    // Example: "React, Node,  " becomes ["React", "Node"]
+    const tagsList = tags 
+        ? tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+        : [];
+
+    // Create the slug (URL-friendly title)
     const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
     const newNote = new Note({
         title: title,
         slug: slug,
         content: content,
-        date: new Date()
+        date: new Date(),
+        tags: tagsList // <--- 3. Save the array of tags here
     });
+
     try {
         await newNote.save();
         res.redirect(`/note/${slug}`);
@@ -124,6 +153,7 @@ app.post('/note/new', requireLogin, async (req, res) => {
         if (err.code === 11000) { // Handle duplicate slug error
             return res.status(400).send("A note with this title already exists.");
         }
+        console.error(err); // Good to see the actual error in console
         res.status(500).send("Failed to save the note.");
     }
 });
@@ -146,17 +176,32 @@ app.get('/note/:slug/edit', requireLogin, async (req, res) => {
     }
 });
 
-// POST Update an existing note in DB
+// POST Update an existing note
 app.post('/note/:slug/edit', requireLogin, async (req, res) => {
+    // 1. Get content, date, and tags from the form
+    const { content, date, tags } = req.body;
+
+    // 2. Process the tags string into an array
+    const tagsList = tags 
+        ? tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+        : [];
+
     try {
-        const { content, date } = req.body;
+        // 3. Find the note by the URL slug and update its fields
         await Note.findOneAndUpdate(
-            { slug: req.params.slug },
-            { content: content, date: new Date(date) }
+            { slug: req.params.slug }, // Find by the slug in the URL
+            {
+                content: content,
+                date: new Date(date), // Update the date
+                tags: tagsList // <--- Update the tags array
+            }
         );
+
+        // 4. Redirect back to the note reading page
         res.redirect(`/note/${req.params.slug}`);
     } catch (err) {
-        res.status(500).send("Failed to update note.");
+        console.error(err);
+        res.status(500).send("Failed to update the note.");
     }
 });
 

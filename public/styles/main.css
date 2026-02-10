@@ -430,3 +430,91 @@ mark {
     color: #000; /* Force dark text for readability */
 }
 
+/* Tag Input Field in Editor */
+.notepad-tags {
+    width: 100%;
+    border: none;
+    background: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 0;
+    font-size: 0.9rem;
+    color: var(--text-muted); /* Make it slightly lighter than the title */
+    margin-bottom: 1rem;
+    outline: none;
+}
+
+/* Tag Badges on Homepage */
+.note-tags {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag {
+    background-color: var(--background-secondary);
+    color: var(--text-color);
+    font-size: 0.75rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    text-decoration: none; /* Removes the underline from the link */
+    transition: all 0.2s ease; /* Smooth animation */
+}
+
+/* Optional: Make tags green on hover */
+.tag:hover {
+    background-color: var(--brand-color); /* Turns green on hover */
+    color: white; /* Text turns white */
+    border-color: var(--brand-color);
+    cursor: pointer;
+}
+
+/* Note List Styling */
+.note-list {
+    list-style: none; /* Remove bullet points */
+    padding: 0;
+    margin: 0;
+}
+
+.note-item {
+    margin-bottom: 2.5rem; /* Big space between separate notes */
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: flex-start; /* Align everything to the left */
+}
+
+/* 1. Give the Title some space below it */
+.note-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--brand-color); /* Uses your link color */
+    margin-bottom: 0.6rem; /* Space between Title and Tags */
+    display: block; /* Ensures margin works */
+}
+
+.note-title:hover {
+    text-decoration: underline;
+}
+
+/* 2. Give the Tags some space below them */
+.note-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem; /* Space between individual tags */
+    margin-bottom: 0.6rem; /* Space between Tags and Date */
+}
+
+/* 3. Style the Date to be subtle */
+.note-date {
+    font-size: 0.85rem;
+    color: #666; /* Grey text */
+    margin-top: 0.2rem;
+}
+
+/* Dark mode adjustment for date */
+[data-theme='dark'] .note-date {
+    color: #aaa;
+}
+

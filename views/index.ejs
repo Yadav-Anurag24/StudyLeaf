@@ -2,22 +2,36 @@
     <input type="search" name="query" placeholder="Search notes..." required>
     <button type="submit">🔎</button>
 </form>
+
 <main>
     <h2>Archive</h2>
     
     <% if (notes && notes.length > 0) { %>
-       <ul>
-     <% notes.forEach(note => { %>
-        <li>
-            <a href="/note/<%= note.slug %>"><%= note.title %></a>
-            <% if (note.date) { %>
-                <span class="note-date"><%= new Date(note.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
-            <% } %>
-        </li>
-    <% }) %>
- </ul>
+        <ul class="note-list">
+            <% notes.forEach(note => { %>
+                <li class="note-item">
+                    <a href="/note/<%= note.slug %>" class="note-title">
+                        <%= note.title %>
+                    </a>
+
+                    <% if (note.tags && note.tags.length > 0) { %>
+                        <div class="note-tags">
+                            <% note.tags.forEach(tag => { %>
+                                <a href="/tags/<%= tag %>" class="tag"><%= tag %></a>
+                            <% }) %>
+                        </div>
+                    <% } %>
+
+                    <% if (note.date) { %>
+                        <div class="note-date">
+                            <%= new Date(note.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                        </div>
+                    <% } %>
+                </li>
+            <% }) %>
+        </ul>
     <% } else { %>
-        <p>No notes found.</p>
+        <p>No notes found. create one?</p>
     <% } %>
 </main>
 
