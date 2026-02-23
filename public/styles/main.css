@@ -518,3 +518,463 @@ mark {
     color: #aaa;
 }
 
+
+/* ==========================================================================
+   PAGINATION STYLES
+   ========================================================================== */
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.pagination-numbers {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination-btn,
+.pagination-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-height: 38px;
+}
+
+.pagination-btn:hover,
+.pagination-num:hover {
+    background-color: var(--brand-color);
+    color: white;
+    border-color: var(--brand-color);
+    text-decoration: none;
+}
+
+.pagination-num.active {
+    background-color: var(--brand-color);
+    color: white;
+    border-color: var(--brand-color);
+    font-weight: 600;
+    cursor: default;
+}
+
+.pagination-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.pagination-ellipsis {
+    padding: 0.5rem 0.3rem;
+    color: var(--description-color);
+    font-size: 0.9rem;
+    user-select: none;
+}
+
+
+/* ==========================================================================
+   6. RESPONSIVE DESIGN — TABLET (max-width: 768px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* --- Layout --- */
+    .container {
+        padding: 1.25rem;
+        max-width: 100%;
+    }
+
+    /* --- Header: Stack branding and nav vertically --- */
+    .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .site-header nav {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        width: 100%;
+    }
+
+    .site-header nav a {
+        margin-left: 0;
+        margin-right: 1rem;
+        padding: 0.35rem 0; /* Larger tap target */
+    }
+
+    .theme-toggle {
+        margin-left: auto; /* Push toggle to the right end */
+        padding: 0.35rem 0.5rem;
+    }
+
+    /* --- Page Headings --- */
+    header h1 {
+        font-size: 1.6rem;
+    }
+
+    main h2 {
+        font-size: 1.3rem;
+    }
+
+    /* --- Search Form --- */
+    .search-form {
+        max-width: 100%;
+        margin: 1.5rem auto;
+    }
+
+    /* --- Note List --- */
+    .note-item {
+        margin-bottom: 2rem;
+    }
+
+    .note-title {
+        font-size: 1.3rem;
+    }
+
+    /* --- Tags: Ensure comfortable tap targets --- */
+    .tag {
+        padding: 4px 12px;
+        font-size: 0.8rem;
+        min-height: 28px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* --- Single Note View --- */
+    .edit-btn {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    /* --- Editor / Notepad Form --- */
+    .notepad-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .notepad-content {
+        min-height: 40vh;
+    }
+
+    /* --- Editor Action Buttons --- */
+    .editor-actions {
+        flex-wrap: wrap;
+    }
+
+    .submit-btn,
+    .delete-btn {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.95rem;
+    }
+
+    /* --- FAB & Scroll-to-Top: Prevent overlap --- */
+    .fab {
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+
+    #scrollTopBtn {
+        bottom: 20px;
+        right: 20px;
+        padding: 8px 12px;
+        font-size: 16px;
+    }
+
+    /* --- EasyMDE Toolbar: Horizontal scroll instead of wrapping --- */
+    .EasyMDEContainer .editor-toolbar {
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+        padding-bottom: 4px;
+    }
+
+    .EasyMDEContainer .editor-toolbar button {
+        min-width: 36px;
+        min-height: 36px;
+        flex-shrink: 0;
+    }
+
+    /* --- Code Blocks: Prevent horizontal overflow --- */
+    .note-content pre {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    /* --- Login Form --- */
+    .note-form input[type="text"],
+    .note-form input[type="password"],
+    .note-form textarea {
+        font-size: 1rem;
+        padding: 0.7rem;
+    }
+
+    /* --- Pagination --- */
+    .pagination {
+        gap: 0.35rem;
+    }
+
+    .pagination-btn,
+    .pagination-num {
+        padding: 0.45rem 0.7rem;
+        font-size: 0.85rem;
+    }
+}
+
+
+/* ==========================================================================
+   7. RESPONSIVE DESIGN — MOBILE (max-width: 480px)
+   ========================================================================== */
+
+@media (max-width: 480px) {
+    /* --- Layout: Tighter padding --- */
+    .container {
+        padding: 1rem 0.75rem;
+    }
+
+    /* --- Header --- */
+    .site-title {
+        font-size: 1.25rem;
+    }
+
+    .site-description {
+        font-size: 0.8rem;
+    }
+
+    .site-header nav a {
+        font-size: 0.9rem;
+    }
+
+    /* --- Page Headings --- */
+    header h1 {
+        font-size: 1.35rem;
+    }
+
+    /* --- Search Form: Full width with tighter padding --- */
+    .search-form {
+        margin: 1rem auto;
+    }
+
+    .search-form input {
+        padding: 0.65rem 0.9rem;
+        font-size: 0.9rem;
+    }
+
+    .search-form button {
+        padding: 0 0.9rem;
+        font-size: 1rem;
+    }
+
+    /* --- Note List --- */
+    .note-item {
+        margin-bottom: 1.75rem;
+    }
+
+    .note-title {
+        font-size: 1.15rem;
+        line-height: 1.4;
+    }
+
+    .note-date {
+        font-size: 0.78rem;
+    }
+
+    /* --- Tags --- */
+    .note-tags {
+        gap: 0.4rem;
+    }
+
+    .tag {
+        padding: 3px 10px;
+        font-size: 0.72rem;
+        min-height: 26px;
+    }
+
+    /* --- Single Note View --- */
+    .note-content {
+        font-size: 0.95rem;
+        line-height: 1.65;
+    }
+
+    .note-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .note-content h2 {
+        font-size: 1.25rem;
+    }
+
+    .note-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .edit-btn {
+        float: none;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+
+    /* --- Editor --- */
+    .notepad-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .notepad-tags {
+        font-size: 0.85rem;
+        padding: 8px 0;
+    }
+
+    .notepad-content {
+        min-height: 35vh;
+        font-size: 1rem;
+    }
+
+    /* --- Editor Actions: Stack buttons vertically on very small screens --- */
+    .editor-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .submit-btn,
+    .delete-btn {
+        width: 100%;
+        text-align: center;
+        padding: 0.8rem 1rem;
+    }
+
+    /* --- FAB: Slightly smaller --- */
+    .fab {
+        bottom: 16px;
+        left: 16px;
+        width: 46px;
+        height: 46px;
+        font-size: 22px;
+    }
+
+    #scrollTopBtn {
+        bottom: 16px;
+        right: 16px;
+        padding: 7px 10px;
+        font-size: 14px;
+    }
+
+    /* --- Summary Box --- */
+    .summary-box {
+        padding-left: 1rem;
+        margin-top: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    /* --- Tables inside note content --- */
+    .note-content table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* --- Login Form --- */
+    .note-form .submit-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* --- Pagination: Compact for small screens --- */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+
+    .pagination-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.82rem;
+    }
+
+    .pagination-num {
+        padding: 0.4rem 0.55rem;
+        font-size: 0.82rem;
+        min-width: 34px;
+    }
+
+    .pagination-numbers {
+        gap: 0.15rem;
+    }
+}
+
+
+/* ==========================================================================
+   8. GLOBAL TOUCH & ACCESSIBILITY IMPROVEMENTS
+   ========================================================================== */
+
+/* Minimum tap target size (44x44px per WCAG guidelines) */
+@media (pointer: coarse) {
+    .site-header nav a,
+    .theme-toggle,
+    .tag,
+    .edit-btn,
+    .submit-btn,
+    .delete-btn,
+    .search-form button,
+    .fab,
+    #scrollTopBtn {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .site-header nav a {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .tag {
+        padding: 6px 14px;
+    }
+}
+
+/* Smooth page fade-in animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.container {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Prevent horizontal overflow on all screen sizes */
+html {
+    overflow-x: hidden;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape on iOS */
+}
+
+/* Ensure images and embeds never overflow */
+img, iframe, video, embed, object {
+    max-width: 100%;
+    height: auto;
+}

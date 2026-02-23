@@ -74,27 +74,56 @@ app.get('/logout', (req, res) => {
 
 // --- DATABASE-DRIVEN ROUTES ---
 
-// GET Homepage: Fetch all notes from DB
+const NOTES_PER_PAGE = 10;
+
+// GET Homepage: Fetch all notes from DB (with pagination)
 app.get('/', async (req, res) => {
     try {
-        const notes = await Note.find().sort({ date: -1 }); // Find all notes, sort by date descending
-        res.render('index', { title: 'Home', notes: notes });
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const totalNotes = await Note.countDocuments();
+        const totalPages = Math.ceil(totalNotes / NOTES_PER_PAGE);
+        const notes = await Note.find()
+            .sort({ date: -1 })
+            .skip((page - 1) * NOTES_PER_PAGE)
+            .limit(NOTES_PER_PAGE);
+
+        res.render('index', {
+            title: 'Home',
+            notes: notes,
+            currentPage: page,
+            totalPages: totalPages,
+            basePath: '/'
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send("Server Error");
     }
 });
 
-// GET Search: Find notes in DB
+// GET Search: Find notes in DB (with pagination)
 app.get('/search', async (req, res) => {
     const query = req.query.query;
     if (!query) return res.redirect('/');
     try {
-        const searchQuery = new RegExp(query, 'i'); // Case-insensitive search
-        const results = await Note.find({
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const searchQuery = new RegExp(query, 'i');
+        const filter = {
             $or: [{ title: { $regex: searchQuery } }, { content: { $regex: searchQuery } }]
-        }).sort({ date: -1 });
-        res.render('search-results', { title: 'Search Results', results: results, query: query });
+        };
+        const totalResults = await Note.countDocuments(filter);
+        const totalPages = Math.ceil(totalResults / NOTES_PER_PAGE);
+        const results = await Note.find(filter)
+            .sort({ date: -1 })
+            .skip((page - 1) * NOTES_PER_PAGE)
+            .limit(NOTES_PER_PAGE);
+
+        res.render('search-results', {
+            title: 'Search Results',
+            results: results,
+            query: query,
+            currentPage: page,
+            totalPages: totalPages
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send("Server Error");
@@ -106,16 +135,25 @@ app.get('/note/new', requireLogin, (req, res) => {
     res.render('new-note', { title: 'New Note' });
 });
 
-// GET Filter notes by tag
+// GET Filter notes by tag (with pagination)
 app.get('/tags/:tag', async (req, res) => {
     const tag = req.params.tag;
     try {
-        // Find notes where the 'tags' array contains the clicked tag
-        const notes = await Note.find({ tags: tag }).sort({ date: 'desc' });
-        
-        res.render('index', { 
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const filter = { tags: tag };
+        const totalNotes = await Note.countDocuments(filter);
+        const totalPages = Math.ceil(totalNotes / NOTES_PER_PAGE);
+        const notes = await Note.find(filter)
+            .sort({ date: -1 })
+            .skip((page - 1) * NOTES_PER_PAGE)
+            .limit(NOTES_PER_PAGE);
+
+        res.render('index', {
             notes: notes,
-            title: `Tag: ${tag}` // Changes the browser tab title
+            title: `Tag: ${tag}`,
+            currentPage: page,
+            totalPages: totalPages,
+            basePath: `/tags/${tag}`
         });
     } catch (e) {
         res.status(500).send("Error fetching notes by tag.");

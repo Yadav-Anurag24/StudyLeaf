@@ -4,16 +4,56 @@
 
 <main>
     <% if (results && results.length > 0) { %>
-        <ul>
+        <ul class="note-list">
             <% results.forEach(note => { %>
-                <li>
-                    <a href="/note/<%= note.slug %>"><%= note.title %></a>
+                <li class="note-item">
+                    <a href="/note/<%= note.slug %>" class="note-title"><%= note.title %></a>
+
+                    <% if (note.tags && note.tags.length > 0) { %>
+                        <div class="note-tags">
+                            <% note.tags.forEach(tag => { %>
+                                <a href="/tags/<%= tag %>" class="tag"><%= tag %></a>
+                            <% }) %>
+                        </div>
+                    <% } %>
+
                     <% if (note.date) { %>
-                        <span class="note-date"><%= new Date(note.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                        <div class="note-date">
+                            <%= new Date(note.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                        </div>
                     <% } %>
                 </li>
             <% }) %>
         </ul>
+
+        <% if (totalPages > 1) { %>
+            <nav class="pagination" aria-label="Page navigation">
+                <% if (currentPage > 1) { %>
+                    <a href="/search?query=<%= encodeURIComponent(query) %>&page=<%= currentPage - 1 %>" class="pagination-btn pagination-prev">← Prev</a>
+                <% } else { %>
+                    <span class="pagination-btn pagination-prev disabled">← Prev</span>
+                <% } %>
+
+                <div class="pagination-numbers">
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <% if (i === currentPage) { %>
+                            <span class="pagination-num active"><%= i %></span>
+                        <% } else if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+                            <a href="/search?query=<%= encodeURIComponent(query) %>&page=<%= i %>" class="pagination-num"><%= i %></a>
+                        <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+                            <span class="pagination-ellipsis">…</span>
+                        <% } %>
+                    <% } %>
+                </div>
+
+                <% if (currentPage < totalPages) { %>
+                    <a href="/search?query=<%= encodeURIComponent(query) %>&page=<%= currentPage + 1 %>" class="pagination-btn pagination-next">Next →</a>
+                <% } else { %>
+                    <span class="pagination-btn pagination-next disabled">Next →</span>
+                <% } %>
+            </nav>
+        <% } %>
+
     <% } else { %>
         <p>No notes found matching your search.</p>
     <% } %>
