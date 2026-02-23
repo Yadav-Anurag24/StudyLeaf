@@ -8,12 +8,23 @@ const { marked } = require('marked');
 const mongoose = require('mongoose');
 const Note = require('./models/Note');
 const MongoStore = require('connect-mongo');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcrypt');
+
+// --- ENVIRONMENT VARIABLE VALIDATION ---
+const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'ADMIN_PASSWORD_HASH'];
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        console.error(`❌ Missing required environment variable: ${envVar}`);
+        process.exit(1);
+    }
+}
 
 // 2. Constants & Middleware Setup
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Note: Passwords with '#' can sometimes cause issues. Consider changing it if you face login problems.
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 
 // --- DATABASE CONNECTION ---
 mongoose.connect(process.env.DATABASE_URL)
@@ -36,6 +47,41 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// --- SECURITY: Helmet for HTTP security headers ---
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",  // Required for EasyMDE inline scripts
+                "https://unpkg.com",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com"
+            ],
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'",  // Required for EasyMDE & inline styles
+                "https://unpkg.com",
+                "https://cdnjs.cloudflare.com",
+                "https://maxcdn.bootstrapcdn.com"  // Font Awesome for EasyMDE icons
+            ],
+            fontSrc: ["'self'", "https://maxcdn.bootstrapcdn.com", "https://cdnjs.cloudflare.com"],
+            imgSrc: ["'self'", "data:", "https:"],  // Allow external images in notes
+            connectSrc: ["'self'"]
+        }
+    }
+}));
+
+// --- SECURITY: Rate limit on login to prevent brute-force ---
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5,                    // 5 attempts per window
+    message: 'Too many login attempts. Please try again after 15 minutes.',
+    standardHeaders: true,
+    legacyHeaders: false
+});
 
 // THIS MUST COME AFTER THE CONFIGS ABOVE AND BEFORE YOUR ROUTES
 app.use(session({
@@ -60,12 +106,18 @@ app.get('/about', (req, res) => {
 app.get('/login', (req, res) => {
     res.render('login', { title: 'Login', error: null });
 });
-app.post('/login', (req, res) => {
-    if (req.body.password === ADMIN_PASSWORD) {
-        req.session.isLoggedIn = true;
-        res.redirect('/');
-    } else {
-        res.render('login', { title: 'Login', error: 'Incorrect password.' });
+app.post('/login', loginLimiter, async (req, res) => {
+    try {
+        const isMatch = await bcrypt.compare(req.body.password, ADMIN_PASSWORD_HASH);
+        if (isMatch) {
+            req.session.isLoggedIn = true;
+            res.redirect('/');
+        } else {
+            res.render('login', { title: 'Login', error: 'Incorrect password.' });
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+        res.render('login', { title: 'Login', error: 'An error occurred. Please try again.' });
     }
 });
 app.get('/logout', (req, res) => {
@@ -258,7 +310,11 @@ app.get('/note/:slug', async (req, res) => {
     try {
         const note = await Note.findOne({ slug: req.params.slug });
         if (!note) return res.status(404).send("Note not found.");
-        const htmlContent = marked(note.content);
+        // Render Markdown with sanitization (allow only safe tags like <mark>)
+        const htmlContent = marked(note.content, {
+            breaks: true,
+            gfm: true
+        });
         res.render('note', { title: note.title, content: htmlContent, slug: note.slug });
     } catch (err) {
         res.status(500).send("Server Error");
