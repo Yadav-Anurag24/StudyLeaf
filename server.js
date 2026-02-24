@@ -310,12 +310,39 @@ app.get('/note/:slug', async (req, res) => {
     try {
         const note = await Note.findOne({ slug: req.params.slug });
         if (!note) return res.status(404).render('404', { title: 'Not Found' });
+
+        // Calculate reading time (average 200 words per minute)
+        const wordCount = note.content.split(/\s+/).filter(w => w.length > 0).length;
+        const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
         // Render Markdown with sanitization (allow only safe tags like <mark>)
         const htmlContent = marked(note.content, {
             breaks: true,
             gfm: true
         });
-        res.render('note', { title: note.title, content: htmlContent, slug: note.slug });
+
+        // Find related notes that share tags with the current note
+        let relatedNotes = [];
+        if (note.tags && note.tags.length > 0) {
+            relatedNotes = await Note.find({
+                tags: { $in: note.tags },
+                _id: { $ne: note._id }
+            })
+            .sort({ date: -1 })
+            .limit(4)
+            .select('title slug tags date');
+        }
+
+        res.render('note', {
+            title: note.title,
+            content: htmlContent,
+            slug: note.slug,
+            date: note.date,
+            tags: note.tags || [],
+            readingTime: readingTime,
+            wordCount: wordCount,
+            relatedNotes: relatedNotes
+        });
     } catch (err) {
         res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load this note.' });
     }

@@ -1,5 +1,46 @@
 <main class="note-content">
     <a href="/note/<%= slug %>/edit" class="edit-btn" title="Edit this note">✏️ Edit</a>
     <h1><%= title %></h1>
+
+    <div class="note-meta">
+        <% if (date) { %>
+            <span class="note-meta-item">
+                📅 <%= new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+            </span>
+        <% } %>
+        <span class="note-meta-item">📖 <%= readingTime %> min read</span>
+        <span class="note-meta-item"><%= wordCount.toLocaleString() %> words</span>
+    </div>
+
+    <% if (tags && tags.length > 0) { %>
+        <div class="note-tags" style="margin-bottom: 1.5rem;">
+            <% tags.forEach(tag => { %>
+                <a href="/tags/<%= tag %>" class="tag"><%= tag %></a>
+            <% }) %>
+        </div>
+    <% } %>
+
     <%- content %>
 </main>
+
+<% if (relatedNotes && relatedNotes.length > 0) { %>
+<section class="related-notes">
+    <h3 class="related-notes-title">See Also</h3>
+    <ul class="related-notes-list">
+        <% relatedNotes.forEach(related => { %>
+            <li class="related-notes-item">
+                <a href="/note/<%= related.slug %>" class="related-notes-link">
+                    <%= related.title %>
+                </a>
+                <% if (related.tags && related.tags.length > 0) { %>
+                    <div class="note-tags" style="margin-top: 0.4rem;">
+                        <% related.tags.forEach(tag => { %>
+                            <a href="/tags/<%= tag %>" class="tag"><%= tag %></a>
+                        <% }) %>
+                    </div>
+                <% } %>
+            </li>
+        <% }) %>
+    </ul>
+</section>
+<% } %>

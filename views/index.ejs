@@ -25,6 +25,8 @@
                     <% if (note.date) { %>
                         <div class="note-date">
                             <%= new Date(note.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                            <% const words = note.content.split(/\s+/).filter(w => w.length > 0).length; %>
+                            <span class="note-reading-time">· <%= Math.max(1, Math.ceil(words / 200)) %> min read</span>
                         </div>
                     <% } %>
                 </li>
