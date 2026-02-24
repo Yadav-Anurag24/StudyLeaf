@@ -520,6 +520,68 @@ mark {
 
 
 /* ==========================================================================
+   ERROR PAGE STYLES (404 & 500)
+   ========================================================================== */
+
+.error-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 50vh;
+    padding: 2rem 1rem;
+}
+
+.error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    line-height: 1;
+}
+
+.error-code {
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--brand-color);
+    margin: 0;
+    line-height: 1.1;
+}
+
+.error-message {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0.5rem 0 1rem;
+    color: var(--header-text-color);
+}
+
+.error-description {
+    font-size: 1rem;
+    color: var(--description-color);
+    max-width: 400px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+}
+
+.error-home-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--brand-color);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.error-home-btn:hover {
+    background-color: var(--brand-color-hover);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: white;
+}
+
+
+/* ==========================================================================
    PAGINATION STYLES
    ========================================================================== */
 

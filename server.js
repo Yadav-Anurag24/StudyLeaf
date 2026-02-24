@@ -148,7 +148,7 @@ app.get('/', async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send("Server Error");
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load notes.' });
     }
 });
 
@@ -178,7 +178,7 @@ app.get('/search', async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send("Server Error");
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load search results.' });
     }
 });
 
@@ -208,7 +208,7 @@ app.get('/tags/:tag', async (req, res) => {
             basePath: `/tags/${tag}`
         });
     } catch (e) {
-        res.status(500).send("Error fetching notes by tag.");
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load notes for this tag.' });
     }
 });
 
@@ -217,7 +217,7 @@ app.post('/note/new', requireLogin, async (req, res) => {
     // 1. Get tags from req.body along with title and content
     const { title, content, tags } = req.body;
 
-    if (!title || !content) return res.status(400).send("Title and content are required.");
+    if (!title || !content) return res.status(400).render('error', { title: 'Error', statusCode: 400, message: 'Title and content are required.' });
 
     // 2. Process the tags string into an array
     // Example: "React, Node,  " becomes ["React", "Node"]
@@ -241,10 +241,10 @@ app.post('/note/new', requireLogin, async (req, res) => {
         res.redirect(`/note/${slug}`);
     } catch (err) {
         if (err.code === 11000) { // Handle duplicate slug error
-            return res.status(400).send("A note with this title already exists.");
+            return res.status(400).render('error', { title: 'Error', statusCode: 400, message: 'A note with this title already exists.' });
         }
-        console.error(err); // Good to see the actual error in console
-        res.status(500).send("Failed to save the note.");
+        console.error(err);
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to save the note.' });
     }
 });
 
@@ -252,7 +252,7 @@ app.post('/note/new', requireLogin, async (req, res) => {
 app.get('/note/:slug/edit', requireLogin, async (req, res) => {
     try {
         const note = await Note.findOne({ slug: req.params.slug });
-        if (!note) return res.status(404).send("Note not found.");
+        if (!note) return res.status(404).render('404', { title: 'Not Found' });
         // Format date to YYYY-MM-DD for the input field
         const formattedDate = note.date.toISOString().slice(0, 10);
         res.render('edit-note', {
@@ -262,7 +262,7 @@ app.get('/note/:slug/edit', requireLogin, async (req, res) => {
             marked: marked
         });
     } catch (err) {
-        res.status(500).send("Server Error");
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load note for editing.' });
     }
 });
 
@@ -291,7 +291,7 @@ app.post('/note/:slug/edit', requireLogin, async (req, res) => {
         res.redirect(`/note/${req.params.slug}`);
     } catch (err) {
         console.error(err);
-        res.status(500).send("Failed to update the note.");
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to update the note.' });
     }
 });
 
@@ -301,7 +301,7 @@ app.post('/note/:slug/delete', requireLogin, async (req, res) => {
         await Note.findOneAndDelete({ slug: req.params.slug });
         res.redirect('/');
     } catch (err) {
-        res.status(500).send("Failed to delete note.");
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to delete the note.' });
     }
 });
 
@@ -309,7 +309,7 @@ app.post('/note/:slug/delete', requireLogin, async (req, res) => {
 app.get('/note/:slug', async (req, res) => {
     try {
         const note = await Note.findOne({ slug: req.params.slug });
-        if (!note) return res.status(404).send("Note not found.");
+        if (!note) return res.status(404).render('404', { title: 'Not Found' });
         // Render Markdown with sanitization (allow only safe tags like <mark>)
         const htmlContent = marked(note.content, {
             breaks: true,
@@ -317,8 +317,25 @@ app.get('/note/:slug', async (req, res) => {
         });
         res.render('note', { title: note.title, content: htmlContent, slug: note.slug });
     } catch (err) {
-        res.status(500).send("Server Error");
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load this note.' });
     }
+});
+
+// --- GLOBAL ERROR HANDLERS (must be after all routes) ---
+
+// 404 — Catch-all for unmatched routes
+app.use((req, res) => {
+    res.status(404).render('404', { title: 'Not Found' });
+});
+
+// 500 — Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).render('error', {
+        title: 'Error',
+        statusCode: err.status || 500,
+        message: err.message || 'An unexpected error occurred.'
+    });
 });
 
 // 5. Start the server
