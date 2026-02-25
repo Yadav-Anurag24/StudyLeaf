@@ -101,10 +101,10 @@ app.use(session({
 
 // --- CORE PAGES & AUTH (No change here) ---
 app.get('/about', (req, res) => {
-    res.render('about', { title: 'About' });
+    res.render('about', { title: 'About', description: 'Learn more about StudyLeaf — a personal digital notebook and learning journal.' });
 });
 app.get('/login', (req, res) => {
-    res.render('login', { title: 'Login', error: null });
+    res.render('login', { title: 'Login', description: 'Log in to manage your StudyLeaf notes.', error: null });
 });
 app.post('/login', loginLimiter, async (req, res) => {
     try {
@@ -113,11 +113,11 @@ app.post('/login', loginLimiter, async (req, res) => {
             req.session.isLoggedIn = true;
             res.redirect('/');
         } else {
-            res.render('login', { title: 'Login', error: 'Incorrect password.' });
+            res.render('login', { title: 'Login', description: 'Log in to manage your StudyLeaf notes.', error: 'Incorrect password.' });
         }
     } catch (err) {
         console.error('Login error:', err);
-        res.render('login', { title: 'Login', error: 'An error occurred. Please try again.' });
+        res.render('login', { title: 'Login', description: 'Log in to manage your StudyLeaf notes.', error: 'An error occurred. Please try again.' });
     }
 });
 app.get('/logout', (req, res) => {
@@ -141,6 +141,7 @@ app.get('/', async (req, res) => {
 
         res.render('index', {
             title: 'Home',
+            description: 'Browse all notes on StudyLeaf — a personal learning journal.',
             notes: notes,
             currentPage: page,
             totalPages: totalPages,
@@ -171,6 +172,7 @@ app.get('/search', async (req, res) => {
 
         res.render('search-results', {
             title: 'Search Results',
+            description: `Search results for "${query}" on StudyLeaf.`,
             results: results,
             query: query,
             currentPage: page,
@@ -184,7 +186,7 @@ app.get('/search', async (req, res) => {
 
 // GET Create a new note form (No change here)
 app.get('/note/new', requireLogin, (req, res) => {
-    res.render('new-note', { title: 'New Note' });
+    res.render('new-note', { title: 'New Note', description: 'Create a new note on StudyLeaf.' });
 });
 
 // GET Filter notes by tag (with pagination)
@@ -203,6 +205,7 @@ app.get('/tags/:tag', async (req, res) => {
         res.render('index', {
             notes: notes,
             title: `Tag: ${tag}`,
+            description: `Notes tagged with "${tag}" on StudyLeaf.`,
             currentPage: page,
             totalPages: totalPages,
             basePath: `/tags/${tag}`
@@ -257,6 +260,7 @@ app.get('/note/:slug/edit', requireLogin, async (req, res) => {
         const formattedDate = note.date.toISOString().slice(0, 10);
         res.render('edit-note', {
             title: 'Edit Note',
+            description: `Editing "${note.title}" on StudyLeaf.`,
             note: { title: note.title, content: note.content, date: formattedDate },
             slug: note.slug,
             marked: marked
@@ -321,6 +325,38 @@ app.get('/note/:slug', async (req, res) => {
             gfm: true
         });
 
+        // Generate Table of Contents from rendered headings (h2 and h3)
+        const tocItems = [];
+        const headingRegex = /<h([23])(?:\s[^>]*)?>(.+?)<\/h[23]>/gi;
+        let match;
+        let headingIndex = 0;
+        let contentWithIds = htmlContent;
+
+        // First pass: collect headings
+        const matches = [];
+        while ((match = headingRegex.exec(htmlContent)) !== null) {
+            matches.push({ level: parseInt(match[1]), text: match[2], fullMatch: match[0] });
+        }
+
+        // Second pass: add IDs to headings and build TOC
+        matches.forEach((m, i) => {
+            const slug = m.text
+                .replace(/<[^>]+>/g, '')  // Strip any inline HTML tags
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+            const id = `heading-${slug}-${i}`;
+            const headingWithId = `<h${m.level} id="${id}">${m.text}</h${m.level}>`;
+            contentWithIds = contentWithIds.replace(m.fullMatch, headingWithId);
+            tocItems.push({
+                level: m.level,
+                text: m.text.replace(/<[^>]+>/g, ''),  // Plain text for TOC
+                id: id
+            });
+        });
+
         // Find related notes that share tags with the current note
         let relatedNotes = [];
         if (note.tags && note.tags.length > 0) {
@@ -333,15 +369,26 @@ app.get('/note/:slug', async (req, res) => {
             .select('title slug tags date');
         }
 
+        // Generate a plain-text description from Markdown content (first 160 chars)
+        const plainDescription = note.content
+            .replace(/[#*_`~>\-\[\]()!|]/g, '')  // Strip Markdown syntax
+            .replace(/<[^>]+>/g, '')               // Strip HTML tags
+            .replace(/\s+/g, ' ')                  // Collapse whitespace
+            .trim()
+            .slice(0, 160);
+
         res.render('note', {
             title: note.title,
-            content: htmlContent,
+            description: plainDescription,
+            ogType: 'article',
+            content: contentWithIds,
             slug: note.slug,
             date: note.date,
             tags: note.tags || [],
             readingTime: readingTime,
             wordCount: wordCount,
-            relatedNotes: relatedNotes
+            relatedNotes: relatedNotes,
+            tocItems: tocItems
         });
     } catch (err) {
         res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load this note.' });

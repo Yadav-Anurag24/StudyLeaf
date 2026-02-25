@@ -10,6 +10,21 @@
     
     <title>StudyLeaf - <%= title %></title>
 
+    <!-- SEO & Social Sharing Meta Tags -->
+    <meta name="description" content="<%= typeof description !== 'undefined' && description ? description : 'StudyLeaf — A personal learning journal for notes, ideas, and knowledge.' %>">
+    <meta name="author" content="StudyLeaf">
+
+    <!-- Open Graph (Facebook, LinkedIn, etc.) -->
+    <meta property="og:title" content="StudyLeaf - <%= title %>">
+    <meta property="og:description" content="<%= typeof description !== 'undefined' && description ? description : 'StudyLeaf — A personal learning journal for notes, ideas, and knowledge.' %>">
+    <meta property="og:type" content="<%= typeof ogType !== 'undefined' && ogType ? ogType : 'website' %>">
+    <meta property="og:site_name" content="StudyLeaf">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="StudyLeaf - <%= title %>">
+    <meta name="twitter:description" content="<%= typeof description !== 'undefined' && description ? description : 'StudyLeaf — A personal learning journal for notes, ideas, and knowledge.' %>">
+
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">

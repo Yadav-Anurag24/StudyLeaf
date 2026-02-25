@@ -20,6 +20,21 @@
         </div>
     <% } %>
 
+    <% if (tocItems && tocItems.length >= 3) { %>
+        <details class="toc" open>
+            <summary class="toc-toggle">Table of Contents</summary>
+            <nav class="toc-nav">
+                <ul class="toc-list">
+                    <% tocItems.forEach(item => { %>
+                        <li class="toc-item toc-level-<%= item.level %>">
+                            <a href="#<%= item.id %>" class="toc-link"><%= item.text %></a>
+                        </li>
+                    <% }) %>
+                </ul>
+            </nav>
+        </details>
+    <% } %>
+
     <%- content %>
 </main>
 
