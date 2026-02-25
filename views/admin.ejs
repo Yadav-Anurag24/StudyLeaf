@@ -1,0 +1,80 @@
+<header>
+    <h1>Admin Dashboard</h1>
+</header>
+
+<main>
+    <section class="admin-section">
+        <h2>Backup & Restore</h2>
+        <p>Export all your notes as a JSON file, or restore from a previous backup.</p>
+
+        <div class="admin-actions">
+            <a href="/api/backup" class="admin-btn admin-btn-primary" download>
+                <i data-lucide="download"></i> Download Backup
+            </a>
+
+            <label for="restoreFile" class="admin-btn admin-btn-secondary">
+                <i data-lucide="upload"></i> Restore from File
+            </label>
+            <input type="file" id="restoreFile" accept=".json" style="display: none;">
+        </div>
+        <p id="restoreStatus" class="restore-status"></p>
+    </section>
+
+    <section class="admin-section">
+        <h2>Quick Stats</h2>
+        <div class="admin-stats">
+            <div class="stat-card">
+                <span class="stat-number"><%= totalNotes %></span>
+                <span class="stat-label">Total Notes</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number"><%= publishedNotes %></span>
+                <span class="stat-label">Published</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number"><%= draftNotes %></span>
+                <span class="stat-label">Drafts</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number"><%= totalTags %></span>
+                <span class="stat-label">Tags</span>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    document.getElementById('restoreFile').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const statusEl = document.getElementById('restoreStatus');
+        statusEl.textContent = 'Reading file...';
+        statusEl.className = 'restore-status';
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            statusEl.textContent = `Found ${data.notes?.length || 0} notes. Importing...`;
+
+            const res = await fetch('/api/restore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: data.notes })
+            });
+
+            const result = await res.json();
+            if (res.ok) {
+                statusEl.textContent = `Done! Imported ${result.imported} notes (${result.skipped} skipped).`;
+                statusEl.classList.add('restore-success');
+            } else {
+                statusEl.textContent = result.error || 'Restore failed.';
+                statusEl.classList.add('restore-error');
+            }
+        } catch (err) {
+            statusEl.textContent = 'Invalid JSON file.';
+            statusEl.classList.add('restore-error');
+        }
+    });
+</script>

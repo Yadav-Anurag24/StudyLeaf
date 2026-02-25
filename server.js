@@ -15,13 +15,18 @@ const bcrypt = require('bcrypt');
 const multer = require('multer');
 const flash = require('connect-flash');
 const compression = require('compression');
+const crypto = require('crypto');
 
 // --- MULTER CONFIG: Image uploads ---
 const uploadsDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'public', 'uploads');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadsDir),
     filename: (req, file, cb) => {
-        const uniqueName = Date.now() + '-' + file.originalname.replace(/\s+/g, '-');
+        // Sanitize: strip path traversal, non-ASCII, and special chars
+        const safeName = path.basename(file.originalname)
+            .replace(/[^a-zA-Z0-9._-]/g, '_')
+            .replace(/\.{2,}/g, '.');
+        const uniqueName = Date.now() + '-' + crypto.randomBytes(4).toString('hex') + '-' + safeName;
         cb(null, uniqueName);
     }
 });
@@ -103,9 +108,15 @@ app.use(helmet({
                 "'unsafe-inline'",  // Required for EasyMDE & inline styles
                 "https://unpkg.com",
                 "https://cdnjs.cloudflare.com",
-                "https://maxcdn.bootstrapcdn.com"  // Font Awesome for EasyMDE icons
+                "https://maxcdn.bootstrapcdn.com",  // Font Awesome for EasyMDE icons
+                "https://fonts.googleapis.com"       // Google Fonts stylesheets
             ],
-            fontSrc: ["'self'", "https://maxcdn.bootstrapcdn.com", "https://cdnjs.cloudflare.com"],
+            fontSrc: [
+                "'self'",
+                "https://maxcdn.bootstrapcdn.com",
+                "https://cdnjs.cloudflare.com",
+                "https://fonts.gstatic.com"           // Google Fonts font files
+            ],
             imgSrc: ["'self'", "data:", "https:"],  // Allow external images in notes
             connectSrc: ["'self'"]
         }
@@ -121,6 +132,15 @@ const loginLimiter = rateLimit({
     legacyHeaders: false
 });
 
+// --- SECURITY: Rate limit on image uploads ---
+const uploadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 30,                   // 30 uploads per window
+    message: { error: 'Too many uploads. Please try again after 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
 // THIS MUST COME AFTER THE CONFIGS ABOVE AND BEFORE YOUR ROUTES
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -131,7 +151,10 @@ app.use(session({
         collectionName: 'sessions' // Name of the collection to store sessions
     }),
     cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+        httpOnly: true,                    // Prevents JavaScript access to cookie
+        sameSite: 'lax',                   // CSRF protection
+        secure: process.env.NODE_ENV === 'production' // HTTPS-only in production
     }
 }));
 
@@ -171,10 +194,111 @@ app.get('/logout', (req, res) => {
     req.session.destroy(() => res.redirect('/login'));
 });
 
+// --- ADMIN DASHBOARD ---
+app.get('/admin', requireLogin, async (req, res) => {
+    try {
+        const totalNotes = await Note.countDocuments();
+        const publishedNotes = await Note.countDocuments({ status: { $ne: 'draft' } });
+        const draftNotes = await Note.countDocuments({ status: 'draft' });
+        const tagsAgg = await Note.aggregate([
+            { $unwind: '$tags' },
+            { $group: { _id: '$tags' } }
+        ]);
+        res.render('admin', {
+            title: 'Admin',
+            description: 'StudyLeaf admin dashboard.',
+            totalNotes,
+            publishedNotes,
+            draftNotes,
+            totalTags: tagsAgg.length
+        });
+    } catch (err) {
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load admin dashboard.' });
+    }
+});
+
 // --- IMAGE UPLOAD API ---
-app.post('/api/upload', requireLogin, upload.single('image'), (req, res) => {
+app.post('/api/upload', requireLogin, uploadLimiter, upload.single('image'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
     res.json({ url: `/uploads/${req.file.filename}` });
+});
+
+// --- BACKUP & RESTORE ---
+// GET: Export all notes as JSON
+app.get('/api/backup', requireLogin, async (req, res) => {
+    try {
+        const notes = await Note.find().lean();
+        const backup = {
+            exportedAt: new Date().toISOString(),
+            version: '1.0',
+            count: notes.length,
+            notes: notes
+        };
+        res.set({
+            'Content-Type': 'application/json',
+            'Content-Disposition': `attachment; filename="studyleaf-backup-${Date.now()}.json"`
+        });
+        res.send(JSON.stringify(backup, null, 2));
+    } catch (err) {
+        console.error('Backup error:', err);
+        res.status(500).json({ error: 'Failed to export notes.' });
+    }
+});
+
+// POST: Import notes from JSON backup
+app.post('/api/restore', requireLogin, express.json({ limit: '50mb' }), async (req, res) => {
+    try {
+        const { notes } = req.body;
+        if (!Array.isArray(notes) || notes.length === 0) {
+            return res.status(400).json({ error: 'Invalid backup file. Expected a "notes" array.' });
+        }
+
+        let imported = 0;
+        let skipped = 0;
+
+        for (const note of notes) {
+            // Validate required fields
+            if (!note.title || typeof note.title !== 'string' ||
+                !note.slug || typeof note.slug !== 'string' ||
+                !note.content || typeof note.content !== 'string') {
+                skipped++;
+                continue;
+            }
+
+            // Sanitize slug: only allow safe URL characters
+            const safeSlug = note.slug.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 200);
+            if (!safeSlug) { skipped++; continue; }
+
+            // Check if a note with this slug already exists
+            const exists = await Note.findOne({ slug: safeSlug });
+            if (exists) {
+                skipped++;
+                continue;
+            }
+
+            // Sanitize tags: must be array of strings
+            const safeTags = Array.isArray(note.tags)
+                ? note.tags.filter(t => typeof t === 'string').map(t => t.trim().slice(0, 50)).slice(0, 20)
+                : [];
+
+            await Note.create({
+                title: note.title.slice(0, 300),
+                slug: safeSlug,
+                content: note.content.slice(0, 500000), // 500KB max per note
+                date: note.date ? new Date(note.date) : new Date(),
+                tags: safeTags,
+                status: note.status === 'draft' ? 'draft' : 'published',
+                pinned: note.pinned === true
+            });
+            imported++;
+        }
+
+        req.flash('success', `Restored ${imported} notes (${skipped} skipped as duplicates).`);
+        res.json({ imported, skipped });
+    } catch (err) {
+        console.error('Restore error:', err);
+        res.status(500).json({ error: 'Failed to import notes.' });
+    }
 });
 
 // --- TAG CLOUD PAGE ---
@@ -288,7 +412,9 @@ app.get('/search', async (req, res) => {
     if (!query) return res.redirect('/');
     try {
         const page = Math.max(1, parseInt(req.query.page) || 1);
-        const searchQuery = new RegExp(query, 'i');
+        // Escape regex special chars to prevent ReDoS attacks
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const searchQuery = new RegExp(escapedQuery, 'i');
         const isAdmin = req.session && req.session.isLoggedIn;
         const baseFilter = isAdmin ? {} : { status: { $ne: 'draft' } };
         const filter = {
@@ -507,10 +633,15 @@ app.use((req, res) => {
 // 500 — Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(err.status || 500).render('error', {
+    const statusCode = err.status || 500;
+    // Never expose internal error messages to users in production
+    const safeMessage = statusCode === 500
+        ? 'An unexpected error occurred.'
+        : (err.message || 'An unexpected error occurred.');
+    res.status(statusCode).render('error', {
         title: 'Error',
-        statusCode: err.status || 500,
-        message: err.message || 'An unexpected error occurred.'
+        statusCode: statusCode,
+        message: safeMessage
     });
 });
 
