@@ -793,6 +793,140 @@ mark {
     color: #aaa;
 }
 
+/* Note content snippet — hidden in list view, shown in grid */
+.note-snippet {
+    display: none;
+    font-size: 0.88rem;
+    color: var(--description-color);
+    line-height: 1.55;
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+/* In list view, hide the snippet */
+.note-list:not(.grid-view) .note-snippet {
+    display: none;
+}
+
+/* ==========================================================================
+   ARCHIVE HEADER & VIEW TOGGLE
+   ========================================================================== */
+
+.archive-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.archive-header h2 {
+    margin: 0;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.view-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--description-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.view-btn:hover {
+    color: var(--text-color);
+    background: var(--border-color);
+}
+
+.view-btn.active {
+    background: var(--brand-color);
+    color: white;
+}
+
+.view-btn [data-lucide] {
+    width: 18px;
+    height: 18px;
+}
+
+/* ==========================================================================
+   GRID VIEW STYLES
+   ========================================================================== */
+
+.note-list.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.note-list.grid-view .note-item {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.4rem;
+    margin-bottom: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.note-list.grid-view .note-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='dark'] .note-list.grid-view .note-item:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.note-list.grid-view .note-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.note-list.grid-view .note-snippet {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.85rem;
+    color: var(--description-color);
+    margin-bottom: 0.75rem;
+    line-height: 1.55;
+}
+
+.note-list.grid-view .note-tags {
+    margin-bottom: 0.6rem;
+}
+
+.note-list.grid-view .note-tags .tag {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+}
+
+.note-list.grid-view .note-date {
+    font-size: 0.78rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
 
 /* ==========================================================================
    NOTE METADATA STYLES (Reading time, date, word count)
@@ -1161,6 +1295,16 @@ html {
         font-size: 1.3rem;
     }
 
+    /* --- Grid View: 2 columns on tablet --- */
+    .note-list.grid-view {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .note-list.grid-view .note-item {
+        padding: 1.1rem;
+    }
+
     /* --- Tags: Ensure comfortable tap targets --- */
     .tag {
         padding: 4px 12px;
@@ -1316,6 +1460,25 @@ html {
 
     .note-date {
         font-size: 0.78rem;
+    }
+
+    /* --- Grid View: Single column on mobile --- */
+    .note-list.grid-view {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .note-list.grid-view .note-item {
+        padding: 1rem;
+    }
+
+    .note-list.grid-view .note-title {
+        font-size: 1.05rem;
+    }
+
+    .view-btn [data-lucide] {
+        width: 16px;
+        height: 16px;
     }
 
     /* --- Tags --- */

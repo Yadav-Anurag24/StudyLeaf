@@ -67,4 +67,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
+    // --- List / Grid View Toggle ---
+    const viewToggle = document.getElementById('viewToggle');
+    const noteList = document.getElementById('noteList');
+
+    if (viewToggle && noteList) {
+        const viewBtns = viewToggle.querySelectorAll('.view-btn');
+        const savedView = localStorage.getItem('noteView') || 'list';
+
+        // Apply saved view on load
+        const applyView = (view) => {
+            if (view === 'grid') {
+                noteList.classList.add('grid-view');
+            } else {
+                noteList.classList.remove('grid-view');
+            }
+            viewBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+            localStorage.setItem('noteView', view);
+        };
+
+        applyView(savedView);
+
+        viewBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                applyView(btn.dataset.view);
+            });
+        });
+    }
+
 });

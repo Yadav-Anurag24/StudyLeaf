@@ -4,10 +4,16 @@
 </form>
 
 <main>
-    <h2>Archive</h2>
+    <div class="archive-header">
+        <h2>Archive</h2>
+        <div class="view-toggle" id="viewToggle">
+            <button class="view-btn active" data-view="list" title="List view"><i data-lucide="list"></i></button>
+            <button class="view-btn" data-view="grid" title="Grid view"><i data-lucide="layout-grid"></i></button>
+        </div>
+    </div>
     
     <% if (notes && notes.length > 0) { %>
-        <ul class="note-list">
+        <ul class="note-list" id="noteList">
             <% notes.forEach(note => { %>
                 <li class="note-item">
                     <a href="/note/<%= note.slug %>" class="note-title">
@@ -24,10 +30,20 @@
                         </div>
                     <% } %>
 
+                    <%
+                        const plainText = note.content
+                            .replace(/[#*_`~>\-\[\]()!|]/g, '')
+                            .replace(/<[^>]+>/g, '')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+                        const snippet = plainText.slice(0, 120) + (plainText.length > 120 ? '…' : '');
+                        const words = note.content.split(/\s+/).filter(w => w.length > 0).length;
+                    %>
+                    <p class="note-snippet"><%= snippet %></p>
+
                     <% if (note.date) { %>
                         <div class="note-date">
                             <%= new Date(note.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
-                            <% const words = note.content.split(/\s+/).filter(w => w.length > 0).length; %>
                             <span class="note-reading-time">· <%= Math.max(1, Math.ceil(words / 200)) %> min read</span>
                         </div>
                     <% } %>
