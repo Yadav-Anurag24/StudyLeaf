@@ -7,6 +7,9 @@
     
     <link rel="stylesheet" href="/styles/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <title>StudyLeaf - <%= title %></title>
 
@@ -50,7 +53,7 @@
                 <a href="/">Home</a>
                 <a href="/tags">Tags</a>
                 <a href="/about">About</a>
-                <button id="theme-toggle" class="theme-toggle">🌙</button>
+                <button id="theme-toggle" class="theme-toggle"><i data-lucide="moon"></i></button>
             </nav>
         </header>
 
@@ -67,6 +70,7 @@
 
     <script>hljs.highlightAll();</script>
     <script src="/scripts/main.js"></script>
-    <button id="scrollTopBtn" title="Go to top">⬆️</button>
+    <button id="scrollTopBtn" title="Go to top"><i data-lucide="arrow-up"></i></button>
+    <script>lucide.createIcons();</script>
 </body>
 </html>

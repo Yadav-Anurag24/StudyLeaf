@@ -1,9 +1,9 @@
 <main class="error-page">
-    <div class="error-icon">⚠️</div>
+    <div class="error-icon"><i data-lucide="alert-triangle"></i></div>
     <h1 class="error-code"><%= statusCode || 500 %></h1>
     <h2 class="error-message">Something Went Wrong</h2>
     <p class="error-description">
         <%= message || 'An unexpected error occurred. Please try again later.' %>
     </p>
-    <a href="/" class="error-home-btn">← Back to Home</a>
+    <a href="/" class="error-home-btn"><i data-lucide="chevron-left"></i> Back to Home</a>
 </main>

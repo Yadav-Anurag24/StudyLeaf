@@ -1,14 +1,14 @@
 <main class="note-content">
-    <a href="/note/<%= slug %>/edit" class="edit-btn" title="Edit this note">✏️ Edit</a>
+    <a href="/note/<%= slug %>/edit" class="edit-btn" title="Edit this note"><i data-lucide="pencil"></i> Edit</a>
     <h1><%= title %></h1>
 
     <div class="note-meta">
         <% if (date) { %>
             <span class="note-meta-item">
-                📅 <%= new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                <i data-lucide="calendar"></i> <%= new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
             </span>
         <% } %>
-        <span class="note-meta-item">📖 <%= readingTime %> min read</span>
+        <span class="note-meta-item"><i data-lucide="book-open"></i> <%= readingTime %> min read</span>
         <span class="note-meta-item"><%= wordCount.toLocaleString() %> words</span>
     </div>
 

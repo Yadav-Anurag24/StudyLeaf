@@ -17,8 +17,9 @@ const flash = require('connect-flash');
 const compression = require('compression');
 
 // --- MULTER CONFIG: Image uploads ---
+const uploadsDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'public', 'uploads');
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, path.join(__dirname, 'public', 'uploads')),
+    destination: (req, file, cb) => cb(null, uploadsDir),
     filename: (req, file, cb) => {
         const uniqueName = Date.now() + '-' + file.originalname.replace(/\s+/g, '-');
         cb(null, uniqueName);
@@ -52,7 +53,6 @@ const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 
 // Ensure uploads directory exists
 const fs = require('fs');
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 // --- DATABASE CONNECTION ---
@@ -80,6 +80,11 @@ app.use(express.static(path.join(__dirname, 'public'), {
     maxAge: '7d',   // Cache static assets for 7 days
     etag: true       // Enable ETag for cache validation
 }));
+
+// Serve uploads from /tmp on Vercel (read-only filesystem)
+if (process.env.VERCEL) {
+    app.use('/uploads', express.static('/tmp/uploads'));
+}
 
 // --- SECURITY: Helmet for HTTP security headers ---
 app.use(helmet({

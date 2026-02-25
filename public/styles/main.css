@@ -24,6 +24,67 @@
 }
 
 
+/* ==========================================================================
+   LUCIDE ICON DEFAULTS
+   ========================================================================== */
+
+/* Base icon sizing — inline with text */
+[data-lucide] {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;   /* optical alignment with text baseline */
+    stroke-width: 2;
+    display: inline-block;
+}
+
+/* Larger icons for standalone / decorative contexts */
+.error-icon [data-lucide] {
+    width: 4rem;
+    height: 4rem;
+}
+
+#scrollTopBtn [data-lucide] {
+    width: 1.25rem;
+    height: 1.25rem;
+    vertical-align: middle;
+}
+
+.theme-toggle [data-lucide] {
+    width: 1.25rem;
+    height: 1.25rem;
+    vertical-align: middle;
+}
+
+.search-form button [data-lucide] {
+    width: 1.1rem;
+    height: 1.1rem;
+    vertical-align: middle;
+}
+
+.pagination-btn [data-lucide] {
+    width: 0.85em;
+    height: 0.85em;
+    vertical-align: -0.1em;
+}
+
+.pin-badge [data-lucide] {
+    width: 1rem;
+    height: 1rem;
+    color: var(--brand-color);
+}
+
+.edit-btn [data-lucide] {
+    width: 0.9em;
+    height: 0.9em;
+}
+
+.note-meta-item [data-lucide] {
+    width: 0.95em;
+    height: 0.95em;
+    opacity: 0.7;
+}
+
+
 /* 2. APPLY VARIABLES TO GENERAL STYLES */
 body {
     background-color: var(--background-color);

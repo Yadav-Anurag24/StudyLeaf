@@ -5,7 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const applyTheme = (theme) => {
         body.setAttribute('data-theme', theme);
-        themeToggleButton.textContent = theme === 'dark' ? '☀️' : '🌙';
+        themeToggleButton.innerHTML = theme === 'dark'
+            ? '<i data-lucide="sun"></i>'
+            : '<i data-lucide="moon"></i>';
+        lucide.createIcons();
         localStorage.setItem('theme', theme);
     };
 

@@ -29,9 +29,9 @@
         <% if (totalPages > 1) { %>
             <nav class="pagination" aria-label="Page navigation">
                 <% if (currentPage > 1) { %>
-                    <a href="/search?query=<%= encodeURIComponent(query) %>&page=<%= currentPage - 1 %>" class="pagination-btn pagination-prev">← Prev</a>
+                    <a href="/search?query=<%= encodeURIComponent(query) %>&page=<%= currentPage - 1 %>" class="pagination-btn pagination-prev"><i data-lucide="chevron-left"></i> Prev</a>
                 <% } else { %>
-                    <span class="pagination-btn pagination-prev disabled">← Prev</span>
+                    <span class="pagination-btn pagination-prev disabled"><i data-lucide="chevron-left"></i> Prev</span>
                 <% } %>
 
                 <div class="pagination-numbers">
@@ -47,9 +47,9 @@
                 </div>
 
                 <% if (currentPage < totalPages) { %>
-                    <a href="/search?query=<%= encodeURIComponent(query) %>&page=<%= currentPage + 1 %>" class="pagination-btn pagination-next">Next →</a>
+                    <a href="/search?query=<%= encodeURIComponent(query) %>&page=<%= currentPage + 1 %>" class="pagination-btn pagination-next">Next <i data-lucide="chevron-right"></i></a>
                 <% } else { %>
-                    <span class="pagination-btn pagination-next disabled">Next →</span>
+                    <span class="pagination-btn pagination-next disabled">Next <i data-lucide="chevron-right"></i></span>
                 <% } %>
             </nav>
         <% } %>
