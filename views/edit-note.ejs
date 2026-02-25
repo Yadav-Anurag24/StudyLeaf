@@ -19,6 +19,19 @@
     <input type="date" id="date" name="date" value="<%= note.date %>" required
         style="background-color: var(--background-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem; margin-bottom: 1rem;"
     >
+
+    <div class="editor-options">
+        <label class="editor-option">
+            Status:
+            <select name="status" class="status-select">
+                <option value="published" <%= note.status === 'published' ? 'selected' : '' %>>Published</option>
+                <option value="draft" <%= note.status === 'draft' ? 'selected' : '' %>>Draft</option>
+            </select>
+        </label>
+        <label class="editor-option">
+            <input type="checkbox" name="pinned" <%= note.pinned ? 'checked' : '' %>> Pin to top
+        </label>
+    </div>
     
     <textarea 
         id="content" 
@@ -34,32 +47,9 @@
 
 <form id="hiddenDeleteForm" method="POST" action="/note/<%= slug %>/delete" style="display:none;"></form>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/scripts/editor.js"></script>
 <script>
-    // Initialize EasyMDE with the custom button
-    const mde = new EasyMDE({
-        element: document.getElementById('content'),
-        spellChecker: false,
-        status: false,
-        toolbar: [
-            "bold", "italic", "strikethrough", "|", 
-            "heading-1", "heading-2", "heading-3", "|", 
-            "quote", "unordered-list", "ordered-list", "|", 
-            "link", "image", "|", 
-            {
-                name: "highlight",
-                action: function(editor) {
-                    const cm = editor.codemirror;
-                    const selection = cm.getSelection();
-                    cm.replaceSelection(`<mark>${selection}</mark>`);
-                },
-                className: "fa fa-paint-brush",
-                title: "Highlight Text",
-            },
-            "|",
-            "preview", "side-by-side", "fullscreen"
-        ]
-    });
+    const mde = initEditor('content');
 
     // Your existing delete confirmation logic (unchanged)
     const deleteNoteBtn = document.getElementById('deleteNoteBtn');

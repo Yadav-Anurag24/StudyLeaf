@@ -25,6 +25,9 @@
     <meta name="twitter:title" content="StudyLeaf - <%= title %>">
     <meta name="twitter:description" content="<%= typeof description !== 'undefined' && description ? description : 'StudyLeaf — A personal learning journal for notes, ideas, and knowledge.' %>">
 
+    <!-- RSS Feed Autodiscovery -->
+    <link rel="alternate" type="application/rss+xml" title="StudyLeaf RSS Feed" href="/feed">
+
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
@@ -45,12 +48,20 @@
             </div>
             <nav>
                 <a href="/">Home</a>
+                <a href="/tags">Tags</a>
                 <a href="/about">About</a>
                 <button id="theme-toggle" class="theme-toggle">🌙</button>
             </nav>
         </header>
 
         <%- body %>
+
+        <% if (typeof flashSuccess !== 'undefined' && flashSuccess.length > 0) { %>
+            <div class="flash-toast flash-success" id="flashToast"><%= flashSuccess[0] %></div>
+        <% } %>
+        <% if (typeof flashError !== 'undefined' && flashError.length > 0) { %>
+            <div class="flash-toast flash-error" id="flashToast"><%= flashError[0] %></div>
+        <% } %>
 
     </div>
 

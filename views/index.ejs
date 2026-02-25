@@ -11,7 +11,9 @@
             <% notes.forEach(note => { %>
                 <li class="note-item">
                     <a href="/note/<%= note.slug %>" class="note-title">
+                        <% if (note.pinned) { %><span class="pin-badge" title="Pinned">📌</span> <% } %>
                         <%= note.title %>
+                        <% if (note.status === 'draft') { %><span class="draft-badge">Draft</span><% } %>
                     </a>
 
                     <% if (note.tags && note.tags.length > 0) { %>

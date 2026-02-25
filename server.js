@@ -5,12 +5,36 @@ const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const { marked } = require('marked');
+const { renderMarkdown, getReadingStats, generateTOC, getPlainDescription } = require('./utils/markdownParser');
 const mongoose = require('mongoose');
 const Note = require('./models/Note');
 const MongoStore = require('connect-mongo');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcrypt');
+const multer = require('multer');
+const flash = require('connect-flash');
+const compression = require('compression');
+
+// --- MULTER CONFIG: Image uploads ---
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, path.join(__dirname, 'public', 'uploads')),
+    filename: (req, file, cb) => {
+        const uniqueName = Date.now() + '-' + file.originalname.replace(/\s+/g, '-');
+        cb(null, uniqueName);
+    }
+});
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|webp|svg/;
+        const extOk = allowed.test(path.extname(file.originalname).toLowerCase());
+        const mimeOk = allowed.test(file.mimetype);
+        if (extOk && mimeOk) return cb(null, true);
+        cb(new Error('Only image files (jpg, png, gif, webp, svg) are allowed.'));
+    }
+});
 
 // --- ENVIRONMENT VARIABLE VALIDATION ---
 const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'ADMIN_PASSWORD_HASH'];
@@ -25,6 +49,11 @@ for (const envVar of requiredEnvVars) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
+
+// Ensure uploads directory exists
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 // --- DATABASE CONNECTION ---
 mongoose.connect(process.env.DATABASE_URL)
@@ -45,8 +74,12 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(expressLayouts);
+app.use(compression()); // Gzip compression for all responses
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: '7d',   // Cache static assets for 7 days
+    etag: true       // Enable ETag for cache validation
+}));
 
 // --- SECURITY: Helmet for HTTP security headers ---
 app.use(helmet({
@@ -97,6 +130,15 @@ app.use(session({
     }
 }));
 
+// --- FLASH MESSAGES ---
+app.use(flash());
+app.use((req, res, next) => {
+    res.locals.flashSuccess = req.flash('success');
+    res.locals.flashError = req.flash('error');
+    res.locals.isLoggedIn = req.session && req.session.isLoggedIn;
+    next();
+});
+
 // 4. Define Routes
 
 // --- CORE PAGES & AUTH (No change here) ---
@@ -124,6 +166,86 @@ app.get('/logout', (req, res) => {
     req.session.destroy(() => res.redirect('/login'));
 });
 
+// --- IMAGE UPLOAD API ---
+app.post('/api/upload', requireLogin, upload.single('image'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+    res.json({ url: `/uploads/${req.file.filename}` });
+});
+
+// --- TAG CLOUD PAGE ---
+app.get('/tags', async (req, res) => {
+    try {
+        const tags = await Note.aggregate([
+            { $match: { status: { $ne: 'draft' } } },
+            { $unwind: '$tags' },
+            { $group: { _id: '$tags', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]);
+        const maxCount = tags.length > 0 ? tags[0].count : 1;
+        res.render('tags', {
+            title: 'All Tags',
+            description: 'Browse all tags on StudyLeaf.',
+            tags: tags,
+            maxCount: maxCount
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to load tags.' });
+    }
+});
+
+// --- RSS FEED ---
+app.get('/feed', async (req, res) => {
+    try {
+        const notes = await Note.find({ status: { $ne: 'draft' } }).sort({ date: -1 }).limit(20);
+        const siteUrl = `${req.protocol}://${req.get('host')}`;
+
+        const escapeXml = (str) => str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
+
+        const itemsXml = notes.map(note => {
+            const description = note.content
+                .replace(/[#*_`~>\-\[\]()!|]/g, '')
+                .replace(/<[^>]+>/g, '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .slice(0, 300);
+
+            return `
+        <item>
+            <title>${escapeXml(note.title)}</title>
+            <link>${siteUrl}/note/${note.slug}</link>
+            <guid>${siteUrl}/note/${note.slug}</guid>
+            <pubDate>${new Date(note.date).toUTCString()}</pubDate>
+            <description>${escapeXml(description)}</description>
+            ${note.tags.map(tag => `<category>${escapeXml(tag)}</category>`).join('\n            ')}
+        </item>`;
+        }).join('');
+
+        const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>StudyLeaf</title>
+        <link>${siteUrl}</link>
+        <description>StudyLeaf — A personal learning journal for notes, ideas, and knowledge.</description>
+        <language>en-us</language>
+        <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+        <atom:link href="${siteUrl}/feed" rel="self" type="application/rss+xml"/>${itemsXml}
+    </channel>
+</rss>`;
+
+        res.set('Content-Type', 'application/rss+xml; charset=UTF-8');
+        res.send(rssXml);
+    } catch (err) {
+        console.error('RSS feed error:', err);
+        res.status(500).send('Failed to generate RSS feed.');
+    }
+});
+
 // --- DATABASE-DRIVEN ROUTES ---
 
 const NOTES_PER_PAGE = 10;
@@ -132,10 +254,12 @@ const NOTES_PER_PAGE = 10;
 app.get('/', async (req, res) => {
     try {
         const page = Math.max(1, parseInt(req.query.page) || 1);
-        const totalNotes = await Note.countDocuments();
+        const isAdmin = req.session && req.session.isLoggedIn;
+        const filter = isAdmin ? {} : { status: { $ne: 'draft' } };
+        const totalNotes = await Note.countDocuments(filter);
         const totalPages = Math.ceil(totalNotes / NOTES_PER_PAGE);
-        const notes = await Note.find()
-            .sort({ date: -1 })
+        const notes = await Note.find(filter)
+            .sort({ pinned: -1, date: -1 })
             .skip((page - 1) * NOTES_PER_PAGE)
             .limit(NOTES_PER_PAGE);
 
@@ -160,7 +284,10 @@ app.get('/search', async (req, res) => {
     try {
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const searchQuery = new RegExp(query, 'i');
+        const isAdmin = req.session && req.session.isLoggedIn;
+        const baseFilter = isAdmin ? {} : { status: { $ne: 'draft' } };
         const filter = {
+            ...baseFilter,
             $or: [{ title: { $regex: searchQuery } }, { content: { $regex: searchQuery } }]
         };
         const totalResults = await Note.countDocuments(filter);
@@ -194,11 +321,12 @@ app.get('/tags/:tag', async (req, res) => {
     const tag = req.params.tag;
     try {
         const page = Math.max(1, parseInt(req.query.page) || 1);
-        const filter = { tags: tag };
+        const isAdmin = req.session && req.session.isLoggedIn;
+        const filter = isAdmin ? { tags: tag } : { tags: tag, status: { $ne: 'draft' } };
         const totalNotes = await Note.countDocuments(filter);
         const totalPages = Math.ceil(totalNotes / NOTES_PER_PAGE);
         const notes = await Note.find(filter)
-            .sort({ date: -1 })
+            .sort({ pinned: -1, date: -1 })
             .skip((page - 1) * NOTES_PER_PAGE)
             .limit(NOTES_PER_PAGE);
 
@@ -218,7 +346,7 @@ app.get('/tags/:tag', async (req, res) => {
 // POST Create a new note in DB
 app.post('/note/new', requireLogin, async (req, res) => {
     // 1. Get tags from req.body along with title and content
-    const { title, content, tags } = req.body;
+    const { title, content, tags, status } = req.body;
 
     if (!title || !content) return res.status(400).render('error', { title: 'Error', statusCode: 400, message: 'Title and content are required.' });
 
@@ -236,11 +364,13 @@ app.post('/note/new', requireLogin, async (req, res) => {
         slug: slug,
         content: content,
         date: new Date(),
-        tags: tagsList // <--- 3. Save the array of tags here
+        tags: tagsList,
+        status: status === 'draft' ? 'draft' : 'published'
     });
 
     try {
         await newNote.save();
+        req.flash('success', 'Note created successfully!');
         res.redirect(`/note/${slug}`);
     } catch (err) {
         if (err.code === 11000) { // Handle duplicate slug error
@@ -261,7 +391,7 @@ app.get('/note/:slug/edit', requireLogin, async (req, res) => {
         res.render('edit-note', {
             title: 'Edit Note',
             description: `Editing "${note.title}" on StudyLeaf.`,
-            note: { title: note.title, content: note.content, date: formattedDate },
+            note: { title: note.title, content: note.content, date: formattedDate, status: note.status || 'published', pinned: note.pinned || false },
             slug: note.slug,
             marked: marked
         });
@@ -273,7 +403,7 @@ app.get('/note/:slug/edit', requireLogin, async (req, res) => {
 // POST Update an existing note
 app.post('/note/:slug/edit', requireLogin, async (req, res) => {
     // 1. Get content, date, and tags from the form
-    const { content, date, tags } = req.body;
+    const { content, date, tags, status, pinned } = req.body;
 
     // 2. Process the tags string into an array
     const tagsList = tags 
@@ -287,11 +417,14 @@ app.post('/note/:slug/edit', requireLogin, async (req, res) => {
             {
                 content: content,
                 date: new Date(date), // Update the date
-                tags: tagsList // <--- Update the tags array
+                tags: tagsList,
+                status: status === 'draft' ? 'draft' : 'published',
+                pinned: pinned === 'on'
             }
         );
 
         // 4. Redirect back to the note reading page
+        req.flash('success', 'Note updated successfully!');
         res.redirect(`/note/${req.params.slug}`);
     } catch (err) {
         console.error(err);
@@ -303,6 +436,7 @@ app.post('/note/:slug/edit', requireLogin, async (req, res) => {
 app.post('/note/:slug/delete', requireLogin, async (req, res) => {
     try {
         await Note.findOneAndDelete({ slug: req.params.slug });
+        req.flash('success', 'Note deleted.');
         res.redirect('/');
     } catch (err) {
         res.status(500).render('error', { title: 'Error', statusCode: 500, message: 'Failed to delete the note.' });
@@ -315,67 +449,30 @@ app.get('/note/:slug', async (req, res) => {
         const note = await Note.findOne({ slug: req.params.slug });
         if (!note) return res.status(404).render('404', { title: 'Not Found' });
 
-        // Calculate reading time (average 200 words per minute)
-        const wordCount = note.content.split(/\s+/).filter(w => w.length > 0).length;
-        const readingTime = Math.max(1, Math.ceil(wordCount / 200));
-
-        // Render Markdown with sanitization (allow only safe tags like <mark>)
-        const htmlContent = marked(note.content, {
-            breaks: true,
-            gfm: true
-        });
-
-        // Generate Table of Contents from rendered headings (h2 and h3)
-        const tocItems = [];
-        const headingRegex = /<h([23])(?:\s[^>]*)?>(.+?)<\/h[23]>/gi;
-        let match;
-        let headingIndex = 0;
-        let contentWithIds = htmlContent;
-
-        // First pass: collect headings
-        const matches = [];
-        while ((match = headingRegex.exec(htmlContent)) !== null) {
-            matches.push({ level: parseInt(match[1]), text: match[2], fullMatch: match[0] });
+        // Block public access to draft notes
+        const isAdmin = req.session && req.session.isLoggedIn;
+        if (note.status === 'draft' && !isAdmin) {
+            return res.status(404).render('404', { title: 'Not Found' });
         }
 
-        // Second pass: add IDs to headings and build TOC
-        matches.forEach((m, i) => {
-            const slug = m.text
-                .replace(/<[^>]+>/g, '')  // Strip any inline HTML tags
-                .toLowerCase()
-                .replace(/[^\w\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim();
-            const id = `heading-${slug}-${i}`;
-            const headingWithId = `<h${m.level} id="${id}">${m.text}</h${m.level}>`;
-            contentWithIds = contentWithIds.replace(m.fullMatch, headingWithId);
-            tocItems.push({
-                level: m.level,
-                text: m.text.replace(/<[^>]+>/g, ''),  // Plain text for TOC
-                id: id
-            });
-        });
+        // Use shared utilities for Markdown processing
+        const { wordCount, readingTime } = getReadingStats(note.content);
+        const htmlContent = renderMarkdown(note.content);
+        const { tocItems, contentWithIds } = generateTOC(htmlContent);
+        const plainDescription = getPlainDescription(note.content);
 
         // Find related notes that share tags with the current note
         let relatedNotes = [];
         if (note.tags && note.tags.length > 0) {
             relatedNotes = await Note.find({
                 tags: { $in: note.tags },
-                _id: { $ne: note._id }
+                _id: { $ne: note._id },
+                status: { $ne: 'draft' }
             })
             .sort({ date: -1 })
             .limit(4)
             .select('title slug tags date');
         }
-
-        // Generate a plain-text description from Markdown content (first 160 chars)
-        const plainDescription = note.content
-            .replace(/[#*_`~>\-\[\]()!|]/g, '')  // Strip Markdown syntax
-            .replace(/<[^>]+>/g, '')               // Strip HTML tags
-            .replace(/\s+/g, ' ')                  // Collapse whitespace
-            .trim()
-            .slice(0, 160);
 
         res.render('note', {
             title: note.title,

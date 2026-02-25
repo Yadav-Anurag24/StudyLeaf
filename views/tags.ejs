@@ -1,0 +1,16 @@
+<main>
+    <h2>All Tags</h2>
+
+    <% if (tags && tags.length > 0) { %>
+        <div class="tag-cloud">
+            <% tags.forEach(tag => { %>
+                <a href="/tags/<%= tag._id %>" class="tag-cloud-item" data-count="<%= tag.count %>"
+                   style="font-size: <%= Math.max(0.85, Math.min(2.2, 0.85 + (tag.count / maxCount) * 1.35)) %>rem;">
+                    <%= tag._id %> <span class="tag-count">(<%= tag.count %>)</span>
+                </a>
+            <% }) %>
+        </div>
+    <% } else { %>
+        <p>No tags found yet.</p>
+    <% } %>
+</main>

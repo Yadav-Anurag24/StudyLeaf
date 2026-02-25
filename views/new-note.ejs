@@ -15,6 +15,16 @@
     placeholder="Tags (separated by commas)..."
     >
 
+    <div class="editor-options">
+        <label class="editor-option">
+            Status:
+            <select name="status" class="status-select">
+                <option value="published" selected>Published</option>
+                <option value="draft">Draft</option>
+            </select>
+        </label>
+    </div>
+
     <textarea 
         id="content" 
         name="content" 
@@ -26,29 +36,7 @@
     </div>
 </form>
 
+<script src="/scripts/editor.js"></script>
 <script>
-    const mde = new EasyMDE({
-        element: document.getElementById('content'),
-        spellChecker: false,
-        status: false,
-        // Add our custom button to the toolbar
-        toolbar: [
-            "bold", "italic", "strikethrough", "|", 
-            "heading-1", "heading-2", "heading-3", "|", 
-            "quote", "unordered-list", "ordered-list", "|", 
-            "link", "image", "|", 
-            {
-                name: "highlight",
-                action: function(editor) {
-                    const cm = editor.codemirror;
-                    const selection = cm.getSelection();
-                    cm.replaceSelection(`<mark>${selection}</mark>`);
-                },
-                className: "fa fa-paint-brush", // Font Awesome icon
-                title: "Highlight Text",
-            },
-            "|",
-            "preview", "side-by-side", "fullscreen"
-        ]
-    });
+    const mde = initEditor('content');
 </script>

@@ -43,4 +43,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Keyboard Shortcut: Ctrl+K to focus search ---
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            const searchInput = document.querySelector('.search-form input[name="query"]');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        }
+    });
+
+    // --- Flash Toast Auto-dismiss ---
+    const flashToast = document.getElementById('flashToast');
+    if (flashToast) {
+        setTimeout(() => {
+            flashToast.classList.add('flash-fade-out');
+            setTimeout(() => flashToast.remove(), 400);
+        }, 3000);
+    }
+
 });

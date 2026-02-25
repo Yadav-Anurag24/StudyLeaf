@@ -3,3 +3,9 @@
 
 # Environment variables - DO NOT UPLOAD
 /.env
+
+# User-uploaded images
+/public/uploads/
+
+# Legacy data folder
+/data/
