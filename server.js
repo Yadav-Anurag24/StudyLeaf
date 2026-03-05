@@ -67,14 +67,16 @@ mongoose.connect(process.env.DATABASE_URL)
 
 // Gatekeeper Middleware: Checks if a user is logged in
 const requireLogin = (req, res, next) => {
-    if (req.session && req.session.isLoggedIn) { // Added a check for req.session
+    if (req.session && req.session.isLoggedIn) {
         next(); // User is logged in, proceed
     } else {
-        res.redirect('/login'); // User is not logged in, redirect
+        req.session.returnTo = req.originalUrl; // Save intended URL for post-login redirect
+        res.redirect('/login');
     }
 };
 
 // 3. Configure Express App
+app.set('trust proxy', 1); // Trust Vercel's reverse proxy so secure cookies work over HTTPS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -181,7 +183,10 @@ app.post('/login', loginLimiter, async (req, res) => {
         const isMatch = await bcrypt.compare(req.body.password, ADMIN_PASSWORD_HASH);
         if (isMatch) {
             req.session.isLoggedIn = true;
-            res.redirect('/');
+            const redirectTo = req.session.returnTo || '/';
+            delete req.session.returnTo;
+            req.session.save(() => res.redirect(redirectTo));
+            return;
         } else {
             res.render('login', { title: 'Login', description: 'Log in to manage your StudyLeaf notes.', error: 'Incorrect password.' });
         }
