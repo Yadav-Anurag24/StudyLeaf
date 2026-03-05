@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studyleaf-v1';
+const CACHE_NAME = 'studyleaf-v2';
 const STATIC_ASSETS = [
     '/',
     '/styles/main.css',
@@ -9,7 +9,7 @@ const STATIC_ASSETS = [
     '/manifest.json'
 ];
 
-// Install: Cache static assets
+// Install: Cache static assets and activate immediately
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -30,7 +30,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch: Network-first for pages, cache-first for static assets
+// Fetch: Stale-while-revalidate for static assets, network-first for pages
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
@@ -40,14 +40,22 @@ self.addEventListener('fetch', (event) => {
     // Skip API routes and admin routes
     if (request.url.includes('/api/') || request.url.includes('/admin')) return;
 
-    // Cache-first for static assets (CSS, JS, images)
+    // Stale-while-revalidate for static assets (CSS, JS, images)
+    // Serves the cached version instantly, then fetches from network
+    // and updates the cache so next load gets the fresh version.
     if (request.url.match(/\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?)$/)) {
         event.respondWith(
-            caches.match(request).then(cached => {
-                return cached || fetch(request).then(response => {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
-                    return response;
+            caches.open(CACHE_NAME).then(cache => {
+                return cache.match(request).then(cached => {
+                    const networkFetch = fetch(request).then(response => {
+                        if (response.ok) {
+                            cache.put(request, response.clone());
+                        }
+                        return response;
+                    }).catch(() => cached); // fall back to cache if offline
+
+                    // Return cached version immediately, or wait for network
+                    return cached || networkFetch;
                 });
             })
         );
